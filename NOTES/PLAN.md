@@ -140,3 +140,27 @@ Anyone signed in can like a video they can watch (owner decision 2026-11-12: no 
 - `src/components/like-button.tsx` (client): heart + count, optimistic update, rolls back on error. Guests see the count and a "Sign in to like" hint; on a locked video non-members see just the count (the page already shows the join prompt).
 - Feed card shows the like count. The "Most liked" filter chip is added to the feed (ordered by like count, then newest).
 - Done when: count updates, a second click un-likes, a second account adds a separate like, guests and non-members get 401/403 on the route.
+
+## Phase 5b plan — Own sign-in UI (2026-11-12, approved)
+
+Owner wants no Clerk-looking UI: no Clerk modal, no "Secured by Clerk", no "Development mode" badge. **Clerk stays underneath** (sessions, email codes, Google, bot protection, `auth()` on the server). Only the screens become ours, built with Clerk's hooks (`useSignIn`, `useSignUp`, `useClerk`, `useUser`), shadcn/ui and our tokens.
+
+**Sign-in methods:** email code (6 digits, no password) and "Continue with Google". Phone (+976) waits until Mongolia is enabled in Clerk Dashboard → SMS → Settings.
+
+**What gets built**
+
+- `AuthForm` (one client component, used by both the popup and the pages): step 1 email (or Google), step 2 enter the code. It signs in an existing account or signs up a new one automatically, so there's no separate "Sign up" form for users to pick. Resend code, change email, friendly errors ("That code is wrong or expired. Try again.").
+- `AuthDialog`: our own popup (shadcn Dialog, Base UI) wrapping `AuthForm`. Opened by the header "Sign in" button and by "Sign in to like" (and later rate/comment). After sign-in it closes and refreshes the page, so the like button works right away.
+- `/sign-in` page: same form full-page (for links and when JS opens it directly). `/sign-up` redirects to `/sign-in`.
+- `/sso-callback` page: finishes Google sign-in and returns the user to where they started.
+- `AccountMenu` replaces Clerk's `UserButton`: avatar + name, links (Join / Members for owner), "Sign out". Profile editing (change email, delete account) is out of scope for now.
+- Env: `NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in`, `NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-in` so anything Clerk redirects to lands on our page.
+- `<div id="clerk-captcha" />` inside the form: needed for Clerk's bot protection on sign-up.
+
+**Notes / limits**
+
+- "Development mode" only appears in Clerk's own widgets. With our UI it disappears from the site. Clerk's dev-instance emails may still say development until a production instance is set up (before launch).
+- The browser console keeps one Clerk "development keys" warning in dev; it isn't visible to users.
+- Size: about 4 components + 2 pages, ~350 lines. Will split into two PRs if it goes over: (1) form + popup + pages, (2) account menu.
+
+**Done when:** sign in with email code and with Google from the popup and from `/sign-in`; a new email creates an account; sign out works; no Clerk-branded UI appears anywhere on the site; owner badge, Upload and Members links still work.
