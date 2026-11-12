@@ -9,12 +9,17 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.25",
     "@clerk/ui": "^1.42.4",
+    "drizzle-orm": "^0.45.4",
     "next": "15.5.29",
+    "postgres": "^4.1.1",
     "react": "~19.1.4",
     "react-dom": "~19.1.4",
     "server-only": "^0.0.1",
@@ -26,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.11",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
     "eslint-config-prettier": "^10.1.8",

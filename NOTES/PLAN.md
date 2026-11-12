@@ -49,8 +49,8 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 | #   | Phase                                                                                                   | Done when                                                  |
 | --- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | 0   | Scaffold ✅: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens | `npm run lint && typecheck && build` pass                  |
-| 1   | Clerk sign-in + admin role check helper ✅ code done (PR open, needs keys to test)                      | Owner and member see different nav                         |
-| 2   | DB schema + Supabase connection + migrations                                                            | Tables exist                                               |
+| 1   | Clerk sign-in + admin role check helper ✅ merged, owner badge verified                    | Owner and member see different nav                         |
+| 2   | DB schema + Supabase connection + migrations ✅ migrated + verified on Supabase                      | Tables exist                                               |
 | 3   | Owner upload (signed URL) + feed grid + video page player                                               | Uploaded video plays on `/videos/[id]`                     |
 | 4   | Likes (toggle)                                                                                          | Count updates, one like per user                           |
 | 5   | Ratings (1–5 stars)                                                                                     | Average shown on card + page                               |
@@ -69,3 +69,11 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 
 1. What tip amounts, and what price range for paid videos?
 2. Which Facebook Page, and does the owner have admin access for a Page token?
+
+## Phase 2 decisions (2026-11-12)
+
+- Driver: `postgres` (postgres-js v4) + `drizzle-orm/postgres-js`, `prepare: false` for the Supabase transaction pooler (port 6543).
+- **RLS is on with no policies** for every table. The app only reaches the DB through Drizzle on the server, so Supabase's public REST/anon key can read nothing.
+- The DB enforces the rules too: likes/ratings use a composite primary key (one per user per video), `stars` is CHECKed 1–5, comment `text` is CHECKed 1–2000 characters, and `parent_id` self-references with cascade delete.
+- `priceMnt`, `facebookPostId` and `orders` are left out until Phase 8 (added by a later migration).
+- Scripts: `npm run db:generate` (writes SQL to `drizzle/`), `npm run db:migrate` (applies it), `npm run db:studio`.
