@@ -26,7 +26,7 @@ const eslintConfig = [
     rules: { 'no-console': 'off' },
   },
   {
-    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
+    ignores: ['node_modules/**', '.next/**', '.agents/**', '.claude/**', 'out/**', 'build/**', 'next-env.d.ts'],
   },
 ];
 

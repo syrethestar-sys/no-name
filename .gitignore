@@ -46,3 +46,8 @@ next-env.d.ts
 
 # Clerk temporary dev keys
 .clerk/
+
+# Agent skills installed locally (npx skills add clerk/skills)
+.agents/
+.claude/skills/
+skills-lock.json
