@@ -41,9 +41,13 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID.test(value);
 export const isVideoId = isUuid;
 
-/** `ilike` with the user's text escaped, so `%` and `_` match literally. */
+/** `ilike` pattern for "contains this text", with `%`, `_` and `\` matched literally. */
+export function containsPattern(text: string): string {
+  return `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+}
+
 function matchesText(text: string) {
-  const pattern = `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+  const pattern = containsPattern(text);
   return or(ilike(videos.title, pattern), ilike(videos.description, pattern));
 }
 

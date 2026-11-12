@@ -374,3 +374,32 @@ Each PR stays under 300 lines. Checked at desktop and phone width before merging
 **PRs:** (1) migration, `r2.ts`, playback/download/delete by provider; (2) upload goes to R2, and the 2 GB limit plus UI text. Each under 300 lines.
 
 **Done when:** a video over 50 MB uploads, plays for members only (a guest gets no link), gets a transcript, and deleting it removes it from R2.
+
+## Tests plan (2026-11-13, approved)
+
+**Goal:** the important rules get checked automatically on every PR, so a later change can't quietly break them.
+
+**Tool:** Vitest 4.1.12, fast and TypeScript-native. A new script `npm test`, and CI runs it after lint and typecheck.
+
+**What gets tested** (pure logic, no real database or keys, so it's fast and free):
+- **Members-only lock:** who gets a playback link (public, members, owner, guest).
+- **Search filter:** keep matches near the best score, one result per video, no snippet for locked videos or `#meta` matches. To test this, the filtering moves out of `searchVideos` into a small pure function (no behavior change).
+- **Transcript chunks:** ~200-word chunks, tiny chunks dropped, a `#meta` document always present.
+- **Request checks** (the zod schemas): comment text 1–2000 characters, valid ids only, upload paths must match our folders, audio path pattern, video size limits.
+- **Safety helpers:** sign-in `redirect_url` can't send people to another site, and search text with `%` and `_` is escaped.
+- **Formatting:** "5 minutes ago", "2 GB", ratings, durations, and feed links keeping both filters.
+
+Some helpers move from page files into `lib/` so tests can import them. Nothing behaves differently.
+
+**Not in this round:** full browser tests (Playwright) that sign in and upload. They need test accounts and keys in CI, which is a later step.
+
+**PRs:** (1) Vitest setup, CI step, formatting/helper tests; (2) lock, search, chunk and schema tests. Each under 300 lines.
+
+## Design plan, part 3 (2026-11-13, owner picked all four)
+
+1. **Mouse-follow glow:** a soft mint light on a card's edge follows the mouse (getlayers' "border glow"). One small client component sets `--glow-x/--glow-y` on hover, and the CSS draws a radial gradient on a 1px masked border. Mouse-only, and turned off for `prefers-reduced-motion`.
+2. **Phone menu:** below `sm`, the header links (Search, Upload, Members, Join) move into a menu button (shadcn dropdown already in the project). The logo and the account button stay visible.
+3. **Loading skeletons:** `loading.tsx` for the feed, search and video page. Grey glass placeholders with the same shapes (heading, chips, cards, player) and a gentle pulse.
+4. **Featured video:** the feed's newest video (in the current topic/sort, on the first view) is shown big at the top: a wide thumbnail on the left; title, topic, date, likes, stars and a "Watch" button on the right. The rest go in the grid below. On phones it stacks.
+
+**PRs:** (1) glow + phone menu; (2) skeletons + featured video. Each under 300 lines, checked at desktop and phone width.
