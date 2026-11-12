@@ -1,13 +1,27 @@
 import 'server-only';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq } from 'drizzle-orm';
 import { getDb } from '@/db';
-import { videos } from '@/db/schema';
+import { likes, videos } from '@/db/schema';
 import { SIGNED_URL_SECONDS, videoStorage } from '@/lib/supabase';
 import type { Video, VideoTopic } from '@/types/db';
 
 export const VIDEO_TOPICS = ['trading', 'coding', 'life'] as const satisfies readonly VideoTopic[];
 export const isVideoTopic = (value: unknown): value is VideoTopic =>
   VIDEO_TOPICS.includes(value as VideoTopic);
+
+export const FEED_SORTS = ['newest', 'liked'] as const;
+export type FeedSort = (typeof FEED_SORTS)[number];
+export const isFeedSort = (value: unknown): value is FeedSort =>
+  FEED_SORTS.includes(value as FeedSort);
+
+/** Feed URL that keeps the other filter: `/?topic=coding&sort=liked`. Defaults are left out. */
+export function feedHref({ topic, sort }: { topic: VideoTopic | null; sort: FeedSort }): string {
+  const query = new URLSearchParams();
+  if (topic) query.set('topic', topic);
+  if (sort !== 'newest') query.set('sort', sort);
+  const queryString = query.toString();
+  return queryString ? `/?${queryString}` : '/';
+}
 
 export type VideoCardData = Pick<
   Video,
@@ -16,6 +30,7 @@ export type VideoCardData = Pick<
   thumbnailUrl: string | null;
   /** Members-only and the viewer isn't a member: show a teaser, never a playback URL. */
   isLocked: boolean;
+  likeCount: number;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -24,13 +39,16 @@ export const isVideoId = (value: string) => UUID.test(value);
 const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
   visibility === 'members' && !viewerIsMember;
 
-/** Newest ready videos (optionally one topic) with signed thumbnail URLs. */
+/** Ready videos (optionally one topic), newest or most liked first, with signed thumbnail URLs. */
 export async function listReadyVideos(options: {
   viewerIsMember: boolean;
   topic?: VideoTopic;
+  sort?: FeedSort;
   limit?: number;
 }): Promise<VideoCardData[]> {
-  const { viewerIsMember, topic, limit = 60 } = options;
+  const { viewerIsMember, topic, sort = 'newest', limit = 60 } = options;
+  // Counted per query (left join + group by), never stored, so it can't drift.
+  const likeCount = count(likes.userId);
   const rows = await getDb()
     .select({
       id: videos.id,
@@ -40,10 +58,15 @@ export async function listReadyVideos(options: {
       visibility: videos.visibility,
       topic: videos.topic,
       thumbnailPath: videos.thumbnailPath,
+      likeCount,
     })
     .from(videos)
+    .leftJoin(likes, eq(likes.videoId, videos.id))
     .where(and(eq(videos.status, 'ready'), topic ? eq(videos.topic, topic) : undefined))
-    .orderBy(desc(videos.createdAt))
+    .groupBy(videos.id)
+    .orderBy(
+      ...(sort === 'liked' ? [desc(likeCount), desc(videos.createdAt)] : [desc(videos.createdAt)]),
+    )
     .limit(limit);
 
   // Thumbnails are a teaser, so locked cards get one too (shown blurred).

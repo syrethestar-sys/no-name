@@ -1,12 +1,20 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DeleteVideoButton } from '@/components/delete-video-button';
+import { LikeButton, type LikeBlocker } from '@/components/like-button';
 import { LockedVideo } from '@/components/locked-video';
 import { VisibilityToggle } from '@/components/visibility-toggle';
-import { getViewer } from '@/lib/auth';
+import { getViewer, type Viewer } from '@/lib/auth';
 import { formatDate, formatDuration } from '@/lib/format';
 import { TOPIC_LABELS, VISIBILITY_LABELS } from '@/lib/labels';
+import { getLikeState } from '@/lib/likes';
 import { getVideoForPage } from '@/lib/videos';
+
+function likeBlockerFor(viewer: Viewer): LikeBlocker {
+  if (viewer.isMember) return null;
+  if (!viewer.userId) return 'signed-out';
+  return viewer.memberStatus === 'pending' ? 'pending' : 'not-member';
+}
 
 type VideoPageProps = { params: Promise<{ id: string }> };
 
@@ -23,6 +31,7 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const video = await getVideoForPage(id, viewer.isMember);
   if (!video) notFound();
 
+  const likeState = await getLikeState(video.id, viewer.userId);
   const duration = formatDuration(video.durationSeconds);
 
   return (
@@ -50,6 +59,14 @@ export default async function VideoPage({ params }: VideoPageProps) {
             {formatDate(video.createdAt)}
             {duration && ` · ${duration}`}
           </p>
+          <div className="mt-3">
+            <LikeButton
+              videoId={video.id}
+              initialLiked={likeState.liked}
+              initialCount={likeState.likeCount}
+              blocker={likeBlockerFor(viewer)}
+            />
+          </div>
         </div>
         {viewer.isOwner && (
           <div className="flex items-start gap-2">

@@ -130,3 +130,13 @@ Audience: **viewers can be anyone** (public videos, no requirements). Members ar
 - Header: "Join" for non-members, "Pending" badge, "Members" link with a pending count for the owner.
 
 **Later (not in Phase 4):** email to the owner on a new request, and a welcome email on approval (n8n).
+
+## Phase 5 plan — Likes (2026-11-12, approved)
+
+Members (and the owner) can like a video; one like per user per video. The `likes` table already exists (composite PK `videoId + userId`), so **no migration**.
+
+- `POST /api/videos/[id]/like` with body `{ liked: boolean }` (the state the viewer wants, so a double click or retry can't flip it twice): requires a signed-in **member** (`getViewer().isMember`) and a `ready` video, then `INSERT ... ON CONFLICT DO NOTHING` or `DELETE`. Returns `{ liked, likeCount }`. zod-validated. Friendly errors ("Could not save. Try again.").
+- Counts are computed with SQL, never stored: the feed uses `left join likes` + `group by videos.id`; the video page uses `getLikeState()` in `src/lib/likes.ts` (count + whether the viewer liked it).
+- `src/components/like-button.tsx` (client): heart + count, optimistic update, rolls back on error. Guests see the count and a "Sign in to like" hint; signed-in non-members see "Join to like".
+- Feed card shows the like count. The "Most liked" filter chip is added to the feed (ordered by like count, then newest).
+- Done when: count updates, a second click un-likes, a second account adds a separate like, guests and non-members get 401/403 on the route.

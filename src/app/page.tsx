@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
+import { SortChips } from '@/components/sort-chips';
 import { TopicChips } from '@/components/topic-chips';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
-import { isVideoTopic, listReadyVideos, type VideoCardData } from '@/lib/videos';
+import { isFeedSort, isVideoTopic, listReadyVideos, type VideoCardData } from '@/lib/videos';
 
-type HomePageProps = { searchParams: Promise<{ topic?: string }> };
+type HomePageProps = { searchParams: Promise<{ topic?: string; sort?: string }> };
 
 export default async function HomePage({ searchParams }: HomePageProps) {
-  const { topic: topicParam } = await searchParams;
+  const { topic: topicParam, sort: sortParam } = await searchParams;
   const topic = isVideoTopic(topicParam) ? topicParam : null;
+  const sort = isFeedSort(sortParam) ? sortParam : 'newest';
 
   let videos: VideoCardData[] = [];
   let loadFailed = false;
@@ -18,7 +20,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   try {
     const viewer = await getViewer();
     isOwner = viewer.isOwner;
-    videos = await listReadyVideos({ viewerIsMember: viewer.isMember, topic: topic ?? undefined });
+    videos = await listReadyVideos({
+      viewerIsMember: viewer.isMember,
+      topic: topic ?? undefined,
+      sort,
+    });
   } catch (error) {
     unstable_rethrow(error); // let Next's own signals (dynamic rendering, redirects) through
     console.error('feed failed', error);
@@ -34,7 +40,10 @@ export default async function HomePage({ searchParams }: HomePageProps) {
             Work, life, trading and code — shared with people who grow together.
           </p>
         </div>
-        <TopicChips activeTopic={topic} />
+        <div className="flex flex-col items-end gap-2">
+          <TopicChips activeTopic={topic} sort={sort} />
+          <SortChips activeSort={sort} topic={topic} />
+        </div>
       </div>
 
       {loadFailed && (

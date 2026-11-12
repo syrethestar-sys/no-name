@@ -1,23 +1,32 @@
 import Link from 'next/link';
 import { TOPIC_LABELS } from '@/lib/labels';
-import { VIDEO_TOPICS } from '@/lib/videos';
+import { feedHref, VIDEO_TOPICS, type FeedSort } from '@/lib/videos';
 import type { VideoTopic } from '@/types/db';
 
-const chipClass = 'rounded-full px-3 py-1 text-sm transition-colors';
-const activeClass = 'bg-primary/15 text-primary';
-const idleClass = 'bg-secondary text-muted-foreground hover:text-foreground';
+export const chipClass = 'rounded-full px-3 py-1 text-sm transition-colors';
+export const activeChipClass = 'bg-primary/15 text-primary';
+export const idleChipClass = 'bg-secondary text-muted-foreground hover:text-foreground';
 
-export function TopicChips({ activeTopic }: { activeTopic: VideoTopic | null }) {
+export function TopicChips({
+  activeTopic,
+  sort,
+}: {
+  activeTopic: VideoTopic | null;
+  sort: FeedSort;
+}) {
   return (
     <nav className="flex flex-wrap gap-2" aria-label="Topic">
-      <Link href="/" className={`${chipClass} ${activeTopic ? idleClass : activeClass}`}>
+      <Link
+        href={feedHref({ topic: null, sort })}
+        className={`${chipClass} ${activeTopic ? idleChipClass : activeChipClass}`}
+      >
         All
       </Link>
       {VIDEO_TOPICS.map((topic) => (
         <Link
           key={topic}
-          href={`/?topic=${topic}`}
-          className={`${chipClass} ${activeTopic === topic ? activeClass : idleClass}`}
+          href={feedHref({ topic, sort })}
+          className={`${chipClass} ${activeTopic === topic ? activeChipClass : idleChipClass}`}
         >
           {TOPIC_LABELS[topic]}
         </Link>

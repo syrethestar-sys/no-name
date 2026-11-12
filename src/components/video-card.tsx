@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { LockIcon } from 'lucide-react';
+import { HeartIcon, LockIcon } from 'lucide-react';
 import { formatDate, formatDuration } from '@/lib/format';
 import { TOPIC_LABELS } from '@/lib/labels';
 import type { VideoCardData } from '@/lib/videos';
@@ -44,10 +44,17 @@ export function VideoCard({ video }: { video: VideoCardData }) {
       </div>
       <div className="p-3">
         <h2 className="line-clamp-2 font-medium leading-snug">{video.title}</h2>
-        <p className="mt-1 text-xs text-muted-foreground">
-          {TOPIC_LABELS[video.topic]} · {formatDate(video.createdAt)}
-          {video.visibility === 'public' && <span className="text-primary"> · Public</span>}
-        </p>
+        <div className="mt-1 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <p>
+            {TOPIC_LABELS[video.topic]} · {formatDate(video.createdAt)}
+            {video.visibility === 'public' && <span className="text-primary"> · Public</span>}
+          </p>
+          <span className="flex shrink-0 items-center gap-1 font-mono">
+            <HeartIcon className="size-3.5" aria-hidden />
+            <span className="sr-only">Likes:</span>
+            {video.likeCount}
+          </span>
+        </div>
       </div>
     </Link>
   );
