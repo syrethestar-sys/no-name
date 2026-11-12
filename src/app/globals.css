@@ -1,0 +1,36 @@
+@import 'tailwindcss';
+
+/* Design tokens — use these, never hardcode colors in components. */
+:root {
+  --background: #0e1014;
+  --surface: #16181d;
+  --surface-raised: #1d2026;
+  --border: #2a2d34;
+  --foreground: #ececef;
+  --muted: #9a9ca3;
+  --accent: #5fd38d;
+  --accent-soft: #1a2e23;
+  --danger: #f2706b;
+  --radius: 12px;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --radius-card: var(--radius);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}

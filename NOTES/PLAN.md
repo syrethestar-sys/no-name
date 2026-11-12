@@ -1,0 +1,71 @@
+# Plan — Experience Video Community
+
+Status: **APPROVED** (2026-11-12). Owner answers: guests watch without sign-in · replies allowed · videos in Mongolian + English · Phase 8 wanted.
+
+## Goal
+
+The owner uploads videos of their experiences. Signed-in members watch, like, comment and rate (1–5 stars).
+Anyone can search videos by meaning ("the trip where it snowed") using transcripts.
+
+## Who can do what
+
+| Action | Guest | Member (Clerk) | Owner (admin) |
+|---|---|---|---|
+| Watch / browse / search | yes | yes | yes |
+| Like, comment, rate | – | yes | yes |
+| Delete own comment | – | yes | yes |
+| Upload / edit / delete video, delete any comment | – | – | yes |
+
+The owner is marked by Clerk `publicMetadata.role = "admin"`. Checked on the server, never just hidden in the UI.
+
+## Database (Drizzle, `src/db/schema.ts`)
+
+| Table | Columns | Rules |
+|---|---|---|
+| `videos` | id, title, description, storagePath, thumbnailPath, durationSeconds, language (`mn`/`en`), transcript, status (`processing`/`ready`/`failed`), priceMnt (null = free), facebookPostId, createdAt | |
+| `likes` | videoId, userId, createdAt | unique (videoId, userId) → a click toggles |
+| `ratings` | videoId, userId, stars (1–5), updatedAt | unique (videoId, userId) → re-rating updates |
+| `comments` | id, videoId, userId, parentId (null = top-level), text (1–2000), createdAt | replies are one level deep, YouTube-style: a reply to a reply attaches to the top-level comment |
+| `orders` (Phase 8) | id, userId, videoId (null = tip), amountMnt, status (`pending`/`paid`/`failed`), wireInvoiceId, createdAt | mark `paid` **only** from the verified Wire.mn webhook |
+
+Counts and the star average are computed with SQL. They are not stored as extra columns, so they cannot drift.
+
+## How upload works
+
+1. The owner picks a file on `/upload`. `POST /api/videos/upload-url` checks admin, then returns a **signed Supabase upload URL**.
+2. The browser uploads straight to Supabase Storage, which avoids Next.js body-size limits. ⚠️ The Supabase free plan has a 50 MB per-file limit, so keep videos short or upgrade.
+3. `POST /api/videos` saves the row with `status=processing`.
+4. n8n webhook (secret header) → Hugging Face whisper transcript → embedding → Pinecone upsert → `status=ready`.
+
+## Pages
+
+- `/` is the feed: a grid of video cards with filter chips (Newest / Most liked / Top rated).
+- `/videos/[id]` has the player, like button, star rating, comments and related videos (Pinecone).
+- `/search?q=` searches by meaning.
+- `/upload` and `/admin` are for the owner only.
+
+## Phases (each = 1 small PR)
+
+| # | Phase | Done when |
+|---|---|---|
+| 0 | Scaffold: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens | `npm run lint && typecheck && build` pass |
+| 1 | Clerk sign-in + admin role check helper | Owner and member see different nav |
+| 2 | DB schema + Supabase connection + migrations | Tables exist |
+| 3 | Owner upload (signed URL) + feed grid + video page player | Uploaded video plays on `/videos/[id]` |
+| 4 | Likes (toggle) | Count updates, one like per user |
+| 5 | Ratings (1–5 stars) | Average shown on card + page |
+| 6 | Comments + replies (add / reply / delete) | zod-validated, friendly errors, replies shown under parent |
+| 7 | n8n + HF transcript + Pinecone search + "related videos" | `/search` finds a video by meaning in Mongolian or English |
+| 8a | Facebook Page auto-post: n8n posts title + link when a video becomes `ready` | Post appears on the owner's Page |
+| 8b | Wire.mn: supporter tips + optional paid videos (`priceMnt`) | Paid video unlocks only after the verified webhook |
+
+## Language (Mongolian + English)
+
+- Whisper auto-detects the language. The detected language is saved in `videos.language`.
+- Embeddings use `paraphrase-multilingual-MiniLM-L12-v2`, which covers Mongolian and English. A search in English can find a Mongolian video and the other way round.
+- UI text is English first. Mongolian UI translation is a possible later task.
+
+## Open questions (not blocking until Phase 8)
+
+1. What tip amounts, and what price range for paid videos?
+2. Which Facebook Page, and does the owner have admin access for a Page token?
