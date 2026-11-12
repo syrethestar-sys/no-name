@@ -403,3 +403,23 @@ Some helpers move from page files into `lib/` so tests can import them. Nothing 
 4. **Featured video:** the feed's newest video (in the current topic/sort, on the first view) is shown big at the top: a wide thumbnail on the left; title, topic, date, likes, stars and a "Watch" button on the right. The rest go in the grid below. On phones it stacks.
 
 **PRs:** (1) glow + phone menu; (2) skeletons + featured video. Each under 300 lines, checked at desktop and phone width.
+
+## Viewfinder redesign — the Codescan look (2026-11-13 night, owner: "make design like getlayers codescan, pixel perfect… get done by morning")
+
+Reference: getlayers.ai/layer/codescan, a paid template (3D WebGL room of CRT TVs inside a camcorder viewfinder). **Not cloned pixel for pixel:** the scene, code and copy are getlayers' paid product. This is an original build of the same *style* with our own content: CSS only, no WebGL, using our own video thumbnails.
+
+What the style is made of, and how we do it:
+1. **Viewfinder frame** around the whole screen: a thin rounded white line inset ~14px, with HUD text in the corners. Top-left: live fps. Top-right: `● REC` (blinking red dot). Bottom-left: today's date `[ 13 / 11 / 26 ]`. Bottom-right: a running timecode `[ 00:04:39 ]` (time on the page). It's a fixed overlay with `pointer-events: none`, stays static for reduced motion, and gets a smaller inset on phones.
+2. **Colors:** the background goes darker and slightly blue (`#07090a`). The accent becomes a **pale mint** (`#c4f5e6`), close to Codescan's pale cyan and still the "one mint accent" of CLAUDE.md. Primary buttons are solid pale mint with dark text. Secondary buttons have a thin white outline. The radius is 6px, not pills.
+3. **Type:** headings use a tall condensed display font, **Oswald** (free Google font, has Cyrillic for Mongolian), in uppercase, light weight, with a pale mint→white gradient. The body stays Inter and the HUD uses JetBrains Mono. CLAUDE.md's design section is updated to match.
+4. **Header:** a centered segmented control (Videos | Search | Join or Upload/Members) with the active part filled pale mint, like Codescan's `<> | Menu | Contact`. The logo sits left and sign-in/account right, inside the frame. The phone menu stays.
+5. **Feed hero, "the wall":** a full-height dark room of CRT TV screens in CSS 3D perspective on both sides. The screens show the newest video thumbnails, and empty screens show animated static, colour bars or a soft glow. Scanlines, vignette, film grain and screen glow on top. The whole wall drifts a little after the cursor, and the screen under the mouse comes into focus while the others blur (rack focus). In the middle: the big condensed title, a crosshair `+`, one subline, and two buttons ("Watch the latest", "Join"). Below it come the tabs, the featured video and the grid, unchanged.
+6. **Cards and player:** cards get faint scanlines and the mono meta line. The video player gets viewfinder corner brackets and a `● REC`-style label (`● PLAY`).
+
+**PRs** (each under 300 lines, screenshots checked at desktop and phone width):
+(A) tokens + Oswald + buttons + viewfinder frame;
+(B) segmented header;
+(C) TV-wall hero;
+(D) headings, cards, player and other pages.
+
+Owner reviews in the morning and anything can be reverted per PR.

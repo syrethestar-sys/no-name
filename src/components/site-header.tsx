@@ -38,7 +38,7 @@ export async function SiteHeader() {
   ];
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-30 -mx-2 bg-background/80 px-2 pt-3 backdrop-blur-md sm:-mx-5 sm:px-5 sm:pt-5">
       <nav className="mx-auto flex h-12 max-w-7xl items-center gap-5 px-4">
         <Link href="/" className="font-semibold tracking-tight">
           Experience<span className="text-primary">.</span>

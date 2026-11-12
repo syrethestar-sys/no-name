@@ -10,37 +10,41 @@
  *   muted-foreground  quiet text      destructive  delete / errors
  *   glass       borderless card tint (getlayers-style), glass-hover on hover
  *   glass-edge  faint top highlight on chips   thumb  empty thumbnail
+ *   rec         the viewfinder's recording dot
+ * Look: a camcorder viewfinder (see NOTES/PLAN.md, "Viewfinder redesign").
  */
 :root {
   --radius: 0.75rem;
-  --background: #08090b;
-  --foreground: #ececef;
-  --card: #16181d;
-  --card-foreground: #ececef;
-  --popover: #16181d;
-  --popover-foreground: #ececef;
-  --primary: #5fd38d;
-  --primary-foreground: #0b1a11;
-  --secondary: #1d2026;
-  --secondary-foreground: #ececef;
-  --muted: #1d2026;
-  --muted-foreground: #9a9ca3;
-  --accent: #1d2026;
-  --accent-foreground: #ececef;
+  --background: #07090a;
+  --foreground: #eef3f2;
+  --card: #101415;
+  --card-foreground: #eef3f2;
+  --popover: #101415;
+  --popover-foreground: #eef3f2;
+  --primary: #c4f5e6;
+  --primary-foreground: #06110d;
+  --secondary: #161b1c;
+  --secondary-foreground: #eef3f2;
+  --muted: #161b1c;
+  --muted-foreground: #98a3a1;
+  --accent: #161b1c;
+  --accent-foreground: #eef3f2;
   --destructive: #f2706b;
-  --border: #2a2d34;
-  --input: #2a2d34;
-  --ring: #5fd38d;
+  --border: #232a2b;
+  --input: #2a3233;
+  --ring: #c4f5e6;
   --glass: rgba(255, 255, 255, 0.035);
   --glass-hover: rgba(255, 255, 255, 0.07);
   --glass-edge: rgba(255, 255, 255, 0.06);
-  --thumb: #141519;
+  --thumb: #111516;
+  --rec: #ff4d4d;
 }
 
 @theme inline {
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-inter);
+  --font-display: var(--font-oswald);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -63,6 +67,7 @@
   --color-glass-hover: var(--glass-hover);
   --color-glass-edge: var(--glass-edge);
   --color-thumb: var(--thumb);
+  --color-rec: var(--rec);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -121,6 +126,18 @@
   &:focus-visible::before {
     opacity: 1;
   }
+}
+
+/* Tall condensed uppercase title with a pale-mint-to-white sheen (the viewfinder headings). */
+@utility display-title {
+  font-family: var(--font-display);
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.95;
+  background-image: linear-gradient(180deg, var(--foreground) 20%, var(--primary) 100%);
+  background-clip: text;
+  color: transparent;
 }
 
 @layer base {
