@@ -109,11 +109,11 @@ Split into two PRs so each stays reviewable (rule: under ~300 lines of hand-writ
 
 ## Phase 4 plan — Membership (2026-11-12, waiting for owner OK)
 
-Audience: people with trading skills, people who code, people who want to share experience (work, life, friends).
+Audience: **viewers can be anyone** (public videos, no requirements). Members are whoever the owner approves; trading / coding / sharing are examples, not requirements.
 
 **Data (one migration)**
 
-- `members`: `user_id` (Clerk id, PK), `status` (`pending` / `approved` / `rejected`), `interests` (array of `trading` / `coding` / `sharing`), `intro` (why join + what you can share, 20–1000 chars), `link` (optional: GitHub / portfolio / trading journal), `created_at`, `reviewed_at`.
+- `members`: `user_id` (Clerk id, PK), `status` (`pending` / `approved` / `rejected`), `interests` (optional array: `trading` / `coding` / `sharing` / `other`, used only to help the owner decide), `intro` (short: who you are / why join, 20–1000 chars), `link` (optional: GitHub / portfolio / trading journal), `created_at`, `reviewed_at`.
   Our DB is the single source of truth. Owner (Clerk role admin) always counts as a member.
 - `videos.visibility`: `public` / `members`, **default `members`**. The owner picks it on upload and can change it later.
 - `videos.topic`: `trading` / `coding` / `life`. Feed filter chips use it.
@@ -125,7 +125,7 @@ Audience: people with trading skills, people who code, people who want to share 
 
 **Pages / routes**
 
-- `/join` (signed in): form with interests checkboxes, intro, link → `POST /api/members/request` (zod, one request per user, can't re-apply for 7 days after a rejection).
+- `/join` (signed in): form with intro (required), optional interests checkboxes, optional link → `POST /api/members/request` (zod, one request per user, can't re-apply for 7 days after a rejection).
 - `/admin/members` (owner): pending list with intro, interests, link → Approve / Reject (`PATCH /api/members/[userId]`).
 - Header: "Join" for non-members, "Pending" badge, "Members" link with a pending count for the owner.
 
