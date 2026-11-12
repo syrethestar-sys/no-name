@@ -41,6 +41,8 @@ export function VideoThumbnail({
           <span>Members only</span>
         </div>
       )}
+      {/* Old-TV scanlines come on when the card is pointed at. */}
+      <div className="scanlines absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       {duration && (
         <span className="absolute right-2 bottom-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-xs">
           {duration}
