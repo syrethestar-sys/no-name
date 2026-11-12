@@ -63,6 +63,8 @@ Only `lib/` and `app/api/` touch secret keys. Components never do.
 
 ## Design
 
-Dark UI. Near-black background, subtle 1px borders, rounded cards, one mint-green accent, Inter + a mono font for code/meta.
+Camcorder viewfinder look (owner asked for getlayers.ai's "Codescan" style, 2026-11-13; our own CSS build, not a copy).
+Near-black slightly blue background, a thin viewfinder frame with REC / timecode, one pale mint accent, a wall of old TVs opening the home page.
+Fonts: Inter for text, Oswald (condensed, uppercase) for display titles via `display-title`, JetBrains Mono for meta/HUD.
 Video feed is a grid of large thumbnail cards (like getlayers.ai's template gallery): thumbnail, title, like count, star average, filter chips above the grid.
 Tokens live in `src/app/globals.css` as CSS variables. Do not hardcode colors in components.

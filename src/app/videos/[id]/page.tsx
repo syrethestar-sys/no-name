@@ -8,6 +8,7 @@ import { LockedVideo } from '@/components/locked-video';
 import { RelatedVideos } from '@/components/related-videos';
 import { TranscriptPanel } from '@/components/transcript-panel';
 import { TranscribeButton } from '@/components/transcribe-button';
+import { ViewfinderCorners } from '@/components/viewfinder-corners';
 import { VisibilityToggle } from '@/components/visibility-toggle';
 import { getViewer } from '@/lib/auth';
 import { formatDate, formatDuration } from '@/lib/format';
@@ -64,7 +65,7 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
     <main className="mx-auto grid max-w-7xl gap-x-8 px-4 py-8 lg:has-[>aside>section]:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="mx-auto w-full max-w-5xl min-w-0">
         {video.playbackUrl ? (
-          <div className="overflow-hidden rounded-xl bg-black shadow-[0_0_80px_-24px_color-mix(in_oklab,var(--primary)_35%,transparent)]">
+          <div className="group/player relative overflow-hidden rounded-xl bg-black shadow-[0_0_80px_-24px_color-mix(in_oklab,var(--primary)_35%,transparent)]">
             <video
               src={video.playbackUrl}
               poster={video.posterUrl ?? undefined}
@@ -73,12 +74,16 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
               preload="metadata"
               className="aspect-video w-full"
             />
+            {/* Brackets fade while the cursor is on the player, so they never cover controls. */}
+            <div className="transition-opacity duration-300 group-hover/player:opacity-0">
+              <ViewfinderCorners label="PLAY" />
+            </div>
           </div>
         ) : (
           <LockedVideo posterUrl={video.posterUrl} memberStatus={viewer.memberStatus} />
         )}
 
-        <h1 className="mt-6 text-2xl font-light tracking-tight sm:text-3xl">{video.title}</h1>
+        <h1 className="display-title mt-6 text-4xl sm:text-5xl">{video.title}</h1>
         <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Video info">
           {[
             TOPIC_LABELS[video.topic],

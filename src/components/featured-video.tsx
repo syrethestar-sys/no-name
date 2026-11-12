@@ -20,7 +20,7 @@ export function FeaturedVideo({ video, label }: { video: VideoCardData; label: s
       </Link>
       <div className="flex flex-col gap-3 px-3 pb-4 md:py-4 md:pr-6 md:pl-1">
         <p className="font-mono text-xs text-primary">{label}</p>
-        <h2 className="text-2xl font-light tracking-tight sm:text-3xl">
+        <h2 className="display-title text-4xl sm:text-5xl">
           <Link href={href} className="hover:text-primary">
             {video.title}
           </Link>
