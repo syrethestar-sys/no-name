@@ -1,22 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
-import { z } from 'zod';
 import { getDb } from '@/db';
 import { members } from '@/db/schema';
 import { getViewer } from '@/lib/auth';
-import { MEMBER_INTERESTS, reapplyDate } from '@/lib/members';
-
-const Body = z.object({
-  intro: z.string().trim().min(20).max(1000),
-  interests: z.array(z.enum(MEMBER_INTERESTS)).max(MEMBER_INTERESTS.length).default([]),
-  link: z
-    .string()
-    .trim()
-    .max(300)
-    .url()
-    .refine((value) => /^https?:\/\//i.test(value), 'http(s) only')
-    .nullable()
-    .default(null),
-});
+import { reapplyDate } from '@/lib/members';
+import { JoinRequestBody } from '@/lib/request-schemas';
 
 /** Signed-in non-members: ask to join. The owner approves on /admin/members. */
 export async function POST(request: Request) {
@@ -37,7 +24,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = Body.safeParse(await request.json().catch(() => null));
+  const parsed = JoinRequestBody.safeParse(await request.json().catch(() => null));
   if (!parsed.success) {
     return Response.json(
       { error: 'Write at least 20 characters about yourself. Links must start with https://' },

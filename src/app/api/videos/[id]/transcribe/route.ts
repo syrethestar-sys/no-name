@@ -1,13 +1,9 @@
-import { z } from 'zod';
 import { getAdminUserId } from '@/lib/auth';
-import { AUDIO_PATH_PATTERN } from '@/lib/supabase';
+import { TranscribeBody } from '@/lib/request-schemas';
 import { saveAudioPath, transcribeVideo } from '@/lib/transcribe';
 import { isVideoId } from '@/lib/videos';
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-/** `audioPath`: the owner's browser just uploaded speech-only audio for this video. */
-const Body = z.object({ audioPath: z.string().regex(AUDIO_PATH_PATTERN).optional() });
 
 const OUTCOME_MESSAGES = {
   failed: 'Could not transcribe. Try again later.',
@@ -29,7 +25,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (!isVideoId(id)) return Response.json({ error: 'Video not found.' }, { status: 404 });
 
   // An empty body is fine (plain retry); a bad one is not.
-  const parsed = Body.safeParse(await request.json().catch(() => ({})));
+  const parsed = TranscribeBody.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return Response.json({ error: 'Bad audio file.' }, { status: 400 });
   if (parsed.data.audioPath) {
     const saved = await saveAudioPath(id, parsed.data.audioPath);

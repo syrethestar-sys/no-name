@@ -1,14 +1,9 @@
-import { z } from 'zod';
 import { COMMENT_MAX_LENGTH, postComment } from '@/lib/comments';
+import { CommentBody } from '@/lib/request-schemas';
 import { checkCanReact } from '@/lib/video-access';
 import { isVideoId } from '@/lib/videos';
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-const CommentBody = z.object({
-  text: z.string().trim().min(1).max(COMMENT_MAX_LENGTH),
-  parentId: z.uuid().optional(),
-});
 
 /** Signed-in viewers: comment on a video they can watch, or reply with `parentId`. */
 export async function POST(request: Request, { params }: RouteContext) {
