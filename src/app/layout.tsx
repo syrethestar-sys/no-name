@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
-import { dark } from '@clerk/ui/themes';
+import { AuthDialogProvider } from '@/components/auth/auth-dialog-provider';
 import { SiteHeader } from '@/components/site-header';
 import './globals.css';
 
@@ -21,9 +21,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
-        <ClerkProvider appearance={{ theme: dark, variables: { colorPrimary: '#5fd38d' } }}>
-          <SiteHeader />
-          {children}
+        {/* Clerk runs underneath; every sign-in screen is our own (see components/auth). */}
+        <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-in">
+          <AuthDialogProvider>
+            <SiteHeader />
+            {children}
+          </AuthDialogProvider>
         </ClerkProvider>
       </body>
     </html>

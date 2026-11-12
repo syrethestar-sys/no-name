@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { SignInButton } from '@clerk/nextjs';
 import { HeartIcon } from 'lucide-react';
+import { useAuthDialog } from '@/components/auth/auth-dialog-provider';
 import { Button } from '@/components/ui/button';
 
 /** Why the viewer can't like. A locked video already shows its own join prompt. */
@@ -23,6 +23,7 @@ export function LikeButton({
   initialCount: number;
   blocker: LikeBlocker;
 }) {
+  const { openAuthDialog } = useAuthDialog();
   const [liked, setLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(initialCount);
   const [isSaving, setIsSaving] = useState(false);
@@ -64,11 +65,9 @@ export function LikeButton({
           {likeCount}
         </span>
         {blocker === 'signed-out' && (
-          <SignInButton mode="modal">
-            <button type="button" className={hintClass}>
-              Sign in to like
-            </button>
-          </SignInButton>
+          <button type="button" className={hintClass} onClick={openAuthDialog}>
+            Sign in to like
+          </button>
         )}
       </div>
     );

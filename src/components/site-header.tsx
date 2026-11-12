@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
-import { Show, SignInButton, UserButton } from '@clerk/nextjs';
-import { Button } from '@/components/ui/button';
+import { Show } from '@clerk/nextjs';
+import { AccountMenu } from '@/components/auth/account-menu';
+import { SignInButton } from '@/components/auth/sign-in-button';
 import { getViewer, type Viewer } from '@/lib/auth';
 import { countPendingRequests } from '@/lib/members';
 
@@ -61,9 +62,7 @@ export async function SiteHeader() {
             </span>
           )}
           <Show when="signed-out">
-            <SignInButton mode="modal">
-              <Button variant="outline">Sign in</Button>
-            </SignInButton>
+            <SignInButton />
           </Show>
           <Show when="signed-in">
             {isOwner && (
@@ -71,7 +70,7 @@ export async function SiteHeader() {
                 owner
               </span>
             )}
-            <UserButton />
+            <AccountMenu />
           </Show>
         </div>
       </nav>

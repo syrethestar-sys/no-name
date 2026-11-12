@@ -1,7 +1,6 @@
 import Link from 'next/link';
-import { SignInButton } from '@clerk/nextjs';
+import { SignInButton } from '@/components/auth/sign-in-button';
 import { JoinForm } from '@/components/join-form';
-import { Button } from '@/components/ui/button';
 import { getViewer } from '@/lib/auth';
 import { reapplyDate } from '@/lib/members';
 
@@ -24,9 +23,7 @@ export default async function JoinPage() {
   if (!viewer.userId) {
     content = (
       <Notice title="Sign in to send a request">
-        <SignInButton mode="modal">
-          <Button className="mt-2">Sign in</Button>
-        </SignInButton>
+        <SignInButton className="mt-2" />
       </Notice>
     );
   } else if (viewer.isMember) {
@@ -62,7 +59,7 @@ export default async function JoinPage() {
       <h1 className="text-2xl font-semibold tracking-tight">Join the community</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         A small group of people who grow together. Anyone can watch the public videos; members see
-        everything and can like, rate and comment. The owner reviews every request.
+        everything. The owner reviews every request.
       </p>
       <div className="mt-8">{content}</div>
     </main>
