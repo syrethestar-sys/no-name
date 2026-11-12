@@ -5,8 +5,8 @@ import { HeartIcon } from 'lucide-react';
 import { useAuthDialog } from '@/components/auth/auth-dialog-provider';
 import { Button } from '@/components/ui/button';
 
-/** Why the viewer can't like. A locked video already shows its own join prompt. */
-export type LikeBlocker = 'signed-out' | 'locked' | null;
+/** Why the viewer can't like or rate. A locked video already shows its own join prompt. */
+export type ReactionBlocker = 'signed-out' | 'locked' | null;
 
 type LikeResponse = { liked: boolean; likeCount: number };
 
@@ -21,7 +21,7 @@ export function LikeButton({
   videoId: string;
   initialLiked: boolean;
   initialCount: number;
-  blocker: LikeBlocker;
+  blocker: ReactionBlocker;
 }) {
   const { openAuthDialog } = useAuthDialog();
   const [liked, setLiked] = useState(initialLiked);

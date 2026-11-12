@@ -1,7 +1,7 @@
 import 'server-only';
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, avg, count, desc, eq, sql } from 'drizzle-orm';
 import { getDb } from '@/db';
-import { likes, videos } from '@/db/schema';
+import { likes, ratings, videos } from '@/db/schema';
 import { SIGNED_URL_SECONDS, videoStorage } from '@/lib/supabase';
 import type { Video, VideoTopic } from '@/types/db';
 
@@ -9,7 +9,7 @@ export const VIDEO_TOPICS = ['trading', 'coding', 'life'] as const satisfies rea
 export const isVideoTopic = (value: unknown): value is VideoTopic =>
   VIDEO_TOPICS.includes(value as VideoTopic);
 
-export const FEED_SORTS = ['newest', 'liked'] as const;
+export const FEED_SORTS = ['newest', 'liked', 'rated'] as const;
 export type FeedSort = (typeof FEED_SORTS)[number];
 export const isFeedSort = (value: unknown): value is FeedSort =>
   FEED_SORTS.includes(value as FeedSort);
@@ -31,6 +31,9 @@ export type VideoCardData = Pick<
   /** Members-only and the viewer isn't a member: show a teaser, never a playback URL. */
   isLocked: boolean;
   likeCount: number;
+  /** null when nobody has rated yet. */
+  ratingAverage: number | null;
+  ratingCount: number;
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -39,7 +42,7 @@ export const isVideoId = (value: string) => UUID.test(value);
 const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
   visibility === 'members' && !viewerIsMember;
 
-/** Ready videos (optionally one topic), newest or most liked first, with signed thumbnail URLs. */
+/** Ready videos (optionally one topic), sorted, with like/rating totals and signed thumbnail URLs. */
 export async function listReadyVideos(options: {
   viewerIsMember: boolean;
   topic?: VideoTopic;
@@ -47,9 +50,39 @@ export async function listReadyVideos(options: {
   limit?: number;
 }): Promise<VideoCardData[]> {
   const { viewerIsMember, topic, sort = 'newest', limit = 60 } = options;
-  // Counted per query (left join + group by), never stored, so it can't drift.
-  const likeCount = count(likes.userId);
-  const rows = await getDb()
+  const db = getDb();
+  // Totals are computed per query, never stored. Each table is totalled in its own subquery:
+  // joining likes and ratings directly would multiply rows and inflate both counts.
+  const likeTotals = db
+    .select({ videoId: likes.videoId, likeCount: count().as('like_count') })
+    .from(likes)
+    .groupBy(likes.videoId)
+    .as('like_totals');
+  const ratingTotals = db
+    .select({
+      videoId: ratings.videoId,
+      ratingCount: count().as('rating_count'),
+      ratingAverage: avg(ratings.stars).as('rating_average'),
+    })
+    .from(ratings)
+    .groupBy(ratings.videoId)
+    .as('rating_totals');
+
+  const likeCount = sql<number>`coalesce(${likeTotals.likeCount}, 0)`.mapWith(Number);
+  const ratingCount = sql<number>`coalesce(${ratingTotals.ratingCount}, 0)`.mapWith(Number);
+  const ratingAverage = sql<number | null>`${ratingTotals.ratingAverage}`.mapWith(Number);
+  const sortOrder = {
+    newest: [desc(videos.createdAt)],
+    liked: [desc(likeCount), desc(videos.createdAt)],
+    // Unrated videos go last; ties break on how many people rated, then newest.
+    rated: [
+      sql`${ratingTotals.ratingAverage} desc nulls last`,
+      desc(ratingCount),
+      desc(videos.createdAt),
+    ],
+  }[sort];
+
+  const rows = await db
     .select({
       id: videos.id,
       title: videos.title,
@@ -59,14 +92,14 @@ export async function listReadyVideos(options: {
       topic: videos.topic,
       thumbnailPath: videos.thumbnailPath,
       likeCount,
+      ratingCount,
+      ratingAverage,
     })
     .from(videos)
-    .leftJoin(likes, eq(likes.videoId, videos.id))
+    .leftJoin(likeTotals, eq(likeTotals.videoId, videos.id))
+    .leftJoin(ratingTotals, eq(ratingTotals.videoId, videos.id))
     .where(and(eq(videos.status, 'ready'), topic ? eq(videos.topic, topic) : undefined))
-    .groupBy(videos.id)
-    .orderBy(
-      ...(sort === 'liked' ? [desc(likeCount), desc(videos.createdAt)] : [desc(videos.createdAt)]),
-    )
+    .orderBy(...sortOrder)
     .limit(limit);
 
   // Thumbnails are a teaser, so locked cards get one too (shown blurred).
@@ -81,6 +114,8 @@ export async function listReadyVideos(options: {
 
   return rows.map(({ thumbnailPath, ...row }) => ({
     ...row,
+    // mapWith(Number) turns SQL null into 0, so re-check against the count.
+    ratingAverage: row.ratingCount > 0 ? row.ratingAverage : null,
     thumbnailUrl: thumbnailPath ? (signedByPath.get(thumbnailPath) ?? null) : null,
     isLocked: isLockedFor(row.visibility, viewerIsMember),
   }));
