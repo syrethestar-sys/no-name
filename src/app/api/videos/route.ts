@@ -25,6 +25,7 @@ const Body = z.object({
     .max(24 * 60 * 60)
     .nullable(),
   visibility: z.enum(['public', 'members']).default('members'),
+  storageProvider: z.enum(['supabase', 'r2']).default('supabase'),
   topic: z.enum(['trading', 'coding', 'life']).default('life'),
 });
 
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
     durationSeconds,
     visibility,
     topic,
+    storageProvider,
   } = parsed.data;
   try {
     const [video] = await getDb()
@@ -58,6 +60,7 @@ export async function POST(request: Request) {
         title,
         description,
         storagePath: videoPath,
+        storageProvider,
         thumbnailPath,
         audioPath,
         durationSeconds,

@@ -45,3 +45,8 @@ export function formatTimeAgo(date: Date, now: Date = new Date()): string {
   }
   return 'just now';
 }
+
+/** 50_000_000 → "50 MB", 2_000_000_000 → "2 GB" (decimal units, like storage limits). */
+export function formatFileSize(bytes: number): string {
+  return bytes >= 1e9 ? `${+(bytes / 1e9).toFixed(1)} GB` : `${Math.round(bytes / 1e6)} MB`;
+}
