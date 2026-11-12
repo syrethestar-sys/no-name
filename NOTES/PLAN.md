@@ -51,7 +51,7 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 | 0   | Scaffold ✅: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens | `npm run lint && typecheck && build` pass                  |
 | 1   | Clerk sign-in + admin role check helper ✅ merged, owner badge verified                    | Owner and member see different nav                         |
 | 2   | DB schema + Supabase connection + migrations ✅ migrated + verified on Supabase                      | Tables exist                                               |
-| 3   | Owner upload (signed URL) + feed grid + video page player                                               | Uploaded video plays on `/videos/[id]`                     |
+| 3   | Owner upload (signed URL) + feed grid + video page player ✅ code done (PR #3 + #4), owner browser test pending                                               | Uploaded video plays on `/videos/[id]`                     |
 | 4   | Likes (toggle)                                                                                          | Count updates, one like per user                           |
 | 5   | Ratings (1–5 stars)                                                                                     | Average shown on card + page                               |
 | 6   | Comments + replies (add / reply / delete)                                                               | zod-validated, friendly errors, replies shown under parent |
