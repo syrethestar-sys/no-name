@@ -4,6 +4,7 @@ import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { getAdminUserId } from '@/lib/auth';
 import { deleteVideoDocuments } from '@/lib/pinecone';
+import { deleteVideoFile } from '@/lib/stored-video';
 import { videoStorage } from '@/lib/supabase';
 import { isVideoId } from '@/lib/videos';
 
@@ -52,17 +53,24 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   try {
     const [deleted] = await getDb().delete(videos).where(eq(videos.id, id)).returning({
       storagePath: videos.storagePath,
+      storageProvider: videos.storageProvider,
       thumbnailPath: videos.thumbnailPath,
       audioPath: videos.audioPath,
     });
     if (!deleted) return Response.json({ error: 'Video not found.' }, { status: 404 });
 
-    const paths = [deleted.storagePath, deleted.thumbnailPath, deleted.audioPath].filter(
+    // The row is already gone, so a failed file delete only leaves an orphan file. Log it, don't fail.
+    await deleteVideoFile(deleted).catch((fileError: unknown) =>
+      console.error('video file cleanup failed', deleted.storagePath, fileError),
+    );
+    // Thumbnails and speech audio always live on Supabase.
+    const smallFiles = [deleted.thumbnailPath, deleted.audioPath].filter(
       (path): path is string => path !== null,
     );
-    // The row is already gone, so a failed file delete only leaves an orphan file. Log it, don't fail.
-    const { error } = await videoStorage().remove(paths);
-    if (error) console.error('storage cleanup failed', paths, error);
+    if (smallFiles.length > 0) {
+      const { error } = await videoStorage().remove(smallFiles);
+      if (error) console.error('storage cleanup failed', smallFiles, error);
+    }
     // Same for search: an orphan document is filtered out later (its video row is gone).
     await deleteVideoDocuments(id).catch((searchError: unknown) =>
       console.error('search cleanup failed', id, searchError),

@@ -4,6 +4,7 @@ import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { MAX_TRANSCRIBE_BYTES, transcribeFile } from '@/lib/groq';
 import { deleteVideoDocuments, upsertDocuments, type VideoDocument } from '@/lib/pinecone';
+import { downloadVideoFile } from '@/lib/stored-video';
 import { videoStorage } from '@/lib/supabase';
 import type { Video } from '@/types/db';
 
@@ -38,7 +39,7 @@ export function buildDocuments(
 
 /** The speech-only audio when the browser made one (much smaller), else the video itself. */
 async function downloadForTranscription(
-  video: Pick<Video, 'id' | 'storagePath' | 'audioPath'>,
+  video: Pick<Video, 'id' | 'storagePath' | 'storageProvider' | 'audioPath'>,
 ): Promise<{ file: Blob; fileName: string }> {
   const fileNameOf = (path: string) => path.split('/').pop() ?? 'video.mp4';
   if (video.audioPath) {
@@ -46,9 +47,7 @@ async function downloadForTranscription(
     if (!error) return { file: data, fileName: fileNameOf(video.audioPath) };
     console.error('audio download failed, using the video', video.id, error);
   }
-  const { data, error } = await videoStorage().download(video.storagePath);
-  if (error) throw error;
-  return { file: data, fileName: fileNameOf(video.storagePath) };
+  return { file: await downloadVideoFile(video), fileName: fileNameOf(video.storagePath) };
 }
 
 /** Points a video at new audio and removes the audio it replaces. */
