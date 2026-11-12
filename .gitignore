@@ -42,3 +42,6 @@ next-env.d.ts
 
 # Claude Code plugin state (local only)
 .omc/
+
+# Clerk temporary dev keys
+.clerk/

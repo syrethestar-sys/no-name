@@ -9,24 +9,24 @@ Anyone can search videos by meaning ("the trip where it snowed") using transcrip
 
 ## Who can do what
 
-| Action | Guest | Member (Clerk) | Owner (admin) |
-|---|---|---|---|
-| Watch / browse / search | yes | yes | yes |
-| Like, comment, rate | – | yes | yes |
-| Delete own comment | – | yes | yes |
-| Upload / edit / delete video, delete any comment | – | – | yes |
+| Action                                           | Guest | Member (Clerk) | Owner (admin) |
+| ------------------------------------------------ | ----- | -------------- | ------------- |
+| Watch / browse / search                          | yes   | yes            | yes           |
+| Like, comment, rate                              | –     | yes            | yes           |
+| Delete own comment                               | –     | yes            | yes           |
+| Upload / edit / delete video, delete any comment | –     | –              | yes           |
 
 The owner is marked by Clerk `publicMetadata.role = "admin"`. Checked on the server, never just hidden in the UI.
 
 ## Database (Drizzle, `src/db/schema.ts`)
 
-| Table | Columns | Rules |
-|---|---|---|
-| `videos` | id, title, description, storagePath, thumbnailPath, durationSeconds, language (`mn`/`en`), transcript, status (`processing`/`ready`/`failed`), priceMnt (null = free), facebookPostId, createdAt | |
-| `likes` | videoId, userId, createdAt | unique (videoId, userId) → a click toggles |
-| `ratings` | videoId, userId, stars (1–5), updatedAt | unique (videoId, userId) → re-rating updates |
-| `comments` | id, videoId, userId, parentId (null = top-level), text (1–2000), createdAt | replies are one level deep, YouTube-style: a reply to a reply attaches to the top-level comment |
-| `orders` (Phase 8) | id, userId, videoId (null = tip), amountMnt, status (`pending`/`paid`/`failed`), wireInvoiceId, createdAt | mark `paid` **only** from the verified Wire.mn webhook |
+| Table              | Columns                                                                                                                                                                                          | Rules                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `videos`           | id, title, description, storagePath, thumbnailPath, durationSeconds, language (`mn`/`en`), transcript, status (`processing`/`ready`/`failed`), priceMnt (null = free), facebookPostId, createdAt |                                                                                                 |
+| `likes`            | videoId, userId, createdAt                                                                                                                                                                       | unique (videoId, userId) → a click toggles                                                      |
+| `ratings`          | videoId, userId, stars (1–5), updatedAt                                                                                                                                                          | unique (videoId, userId) → re-rating updates                                                    |
+| `comments`         | id, videoId, userId, parentId (null = top-level), text (1–2000), createdAt                                                                                                                       | replies are one level deep, YouTube-style: a reply to a reply attaches to the top-level comment |
+| `orders` (Phase 8) | id, userId, videoId (null = tip), amountMnt, status (`pending`/`paid`/`failed`), wireInvoiceId, createdAt                                                                                        | mark `paid` **only** from the verified Wire.mn webhook                                          |
 
 Counts and the star average are computed with SQL. They are not stored as extra columns, so they cannot drift.
 
@@ -46,18 +46,18 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 
 ## Phases (each = 1 small PR)
 
-| # | Phase | Done when |
-|---|---|---|
-| 0 | Scaffold: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens | `npm run lint && typecheck && build` pass |
-| 1 | Clerk sign-in + admin role check helper | Owner and member see different nav |
-| 2 | DB schema + Supabase connection + migrations | Tables exist |
-| 3 | Owner upload (signed URL) + feed grid + video page player | Uploaded video plays on `/videos/[id]` |
-| 4 | Likes (toggle) | Count updates, one like per user |
-| 5 | Ratings (1–5 stars) | Average shown on card + page |
-| 6 | Comments + replies (add / reply / delete) | zod-validated, friendly errors, replies shown under parent |
-| 7 | n8n + HF transcript + Pinecone search + "related videos" | `/search` finds a video by meaning in Mongolian or English |
-| 8a | Facebook Page auto-post: n8n posts title + link when a video becomes `ready` | Post appears on the owner's Page |
-| 8b | Wire.mn: supporter tips + optional paid videos (`priceMnt`) | Paid video unlocks only after the verified webhook |
+| #   | Phase                                                                                                   | Done when                                                  |
+| --- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 0   | Scaffold ✅: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens | `npm run lint && typecheck && build` pass                  |
+| 1   | Clerk sign-in + admin role check helper ✅ code done (PR open, needs keys to test)                      | Owner and member see different nav                         |
+| 2   | DB schema + Supabase connection + migrations                                                            | Tables exist                                               |
+| 3   | Owner upload (signed URL) + feed grid + video page player                                               | Uploaded video plays on `/videos/[id]`                     |
+| 4   | Likes (toggle)                                                                                          | Count updates, one like per user                           |
+| 5   | Ratings (1–5 stars)                                                                                     | Average shown on card + page                               |
+| 6   | Comments + replies (add / reply / delete)                                                               | zod-validated, friendly errors, replies shown under parent |
+| 7   | n8n + HF transcript + Pinecone search + "related videos"                                                | `/search` finds a video by meaning in Mongolian or English |
+| 8a  | Facebook Page auto-post: n8n posts title + link when a video becomes `ready`                            | Post appears on the owner's Page                           |
+| 8b  | Wire.mn: supporter tips + optional paid videos (`priceMnt`)                                             | Paid video unlocks only after the verified webhook         |
 
 ## Language (Mongolian + English)
 
