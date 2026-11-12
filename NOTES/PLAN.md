@@ -179,7 +179,7 @@ Same rules as likes: **anyone signed in** can rate a video they can watch (membe
 
 **Done when:** rating, re-rating and removing all work and survive a reload; average and count are right with two accounts; card and "Top rated" reflect it; guests get the sign-in popup.
 
-## Phase 7 plan — Comments + replies (2026-11-12, waiting for owner OK)
+## Phase 7 plan — Comments + replies (2026-11-12, approved)
 
 The `comments` table already exists (`parent_id` for replies, text CHECKed 1–2000 chars, cascade delete), so **no migration**.
 
@@ -207,6 +207,6 @@ The `comments` table already exists (`parent_id` for replies, text CHECKed 1–2
 
 **Done when:** post / reply / delete work and survive a reload; a reply to a reply lands under the top-level comment; someone else's comment can't be deleted (403) except by the owner; guests get the sign-in popup; members-only rules hold.
 
-**Questions for the owner** (defaults in brackets)
-1. When a top-level comment with replies is deleted: remove the replies too [yes, simplest], or keep them and show "Comment deleted"?
-2. Flood limit of 5 comments per minute per person [OK]?
+**Owner answers (2026-11-12):** deleting a top-level comment removes its replies too; 5 comments per minute per person is OK.
+
+**PRs:** (1) `feat/comments` — `src/lib/comments.ts` + the two API routes; (2) `feat/comments-ui` — the components and the video page.

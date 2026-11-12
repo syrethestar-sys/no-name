@@ -37,7 +37,8 @@ export type VideoCardData = Pick<
 };
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export const isVideoId = (value: string) => UUID.test(value);
+export const isUuid = (value: string) => UUID.test(value);
+export const isVideoId = isUuid;
 
 const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
   visibility === 'members' && !viewerIsMember;
