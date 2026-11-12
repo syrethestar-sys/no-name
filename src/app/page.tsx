@@ -1,30 +1,38 @@
 import Link from 'next/link';
+import { TopicChips } from '@/components/topic-chips';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
-import { isAdmin } from '@/lib/auth';
-import { listReadyVideos, type VideoCardData } from '@/lib/videos';
+import { getViewer } from '@/lib/auth';
+import { isVideoTopic, listReadyVideos, type VideoCardData } from '@/lib/videos';
 
-export default async function HomePage() {
+type HomePageProps = { searchParams: Promise<{ topic?: string }> };
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const { topic: topicParam } = await searchParams;
+  const topic = isVideoTopic(topicParam) ? topicParam : null;
+
   let videos: VideoCardData[] = [];
   let loadFailed = false;
+  let isOwner = false;
   try {
-    videos = await listReadyVideos();
+    const viewer = await getViewer();
+    isOwner = viewer.isOwner;
+    videos = await listReadyVideos({ viewerIsMember: viewer.isMember, topic: topic ?? undefined });
   } catch (error) {
     console.error('feed failed', error);
     loadFailed = true;
   }
-  const isOwner = await isAdmin();
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Experiences</h1>
-          <p className="mt-1 text-muted-foreground">Watch, like, rate and talk about them.</p>
+          <p className="mt-1 text-muted-foreground">
+            Work, life, trading and code — shared with people who grow together.
+          </p>
         </div>
-        <div className="flex gap-2" aria-label="Sort">
-          <span className="rounded-full bg-primary/15 px-3 py-1 text-sm text-primary">Newest</span>
-        </div>
+        <TopicChips activeTopic={topic} />
       </div>
 
       {loadFailed && (
@@ -33,10 +41,12 @@ export default async function HomePage() {
 
       {!loadFailed && videos.length === 0 && (
         <div className="mt-10 rounded-xl border border-dashed p-12 text-center">
-          <p className="text-muted-foreground">No videos yet.</p>
+          <p className="text-muted-foreground">
+            {topic ? 'No videos on this topic yet.' : 'No videos yet.'}
+          </p>
           {isOwner && (
             <Button className="mt-4" nativeButton={false} render={<Link href="/upload" />}>
-              Upload the first one
+              Upload a video
             </Button>
           )}
         </div>
