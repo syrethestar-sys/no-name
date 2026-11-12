@@ -4,10 +4,9 @@ import { Show } from '@clerk/nextjs';
 import { AccountMenu } from '@/components/auth/account-menu';
 import { SignInButton } from '@/components/auth/sign-in-button';
 import { MobileNav, type NavLink } from '@/components/mobile-nav';
+import { SegmentedNav } from '@/components/segmented-nav';
 import { getViewer, type Viewer } from '@/lib/auth';
 import { countPendingRequests } from '@/lib/members';
-
-const navLinkClass = 'hidden text-sm text-muted-foreground hover:text-foreground sm:inline';
 
 async function loadHeaderState(): Promise<{ viewer: Viewer | null; pendingCount: number }> {
   try {
@@ -26,7 +25,8 @@ export async function SiteHeader() {
   const { viewer, pendingCount } = await loadHeaderState();
   const isOwner = viewer?.isOwner ?? false;
   const showJoin = viewer !== null && !viewer.isMember && viewer.memberStatus !== 'pending';
-  const mobileLinks: NavLink[] = [
+  const navLinks: NavLink[] = [
+    { href: '/', label: 'Videos' },
     { href: '/search', label: 'Search' },
     ...(isOwner
       ? [
@@ -39,35 +39,15 @@ export async function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 -mx-2 bg-background/80 px-2 pt-3 backdrop-blur-md sm:-mx-5 sm:px-5 sm:pt-5">
-      <nav className="mx-auto flex h-12 max-w-7xl items-center gap-5 px-4">
-        <Link href="/" className="font-semibold tracking-tight">
-          Experience<span className="text-primary">.</span>
-        </Link>
-        <MobileNav links={mobileLinks} />
-        <Link href="/search" className={navLinkClass}>
-          Search
-        </Link>
-        {isOwner && (
-          <>
-            <Link href="/upload" className={navLinkClass}>
-              Upload
-            </Link>
-            <Link href="/admin/members" className={navLinkClass}>
-              Members
-              {pendingCount > 0 && (
-                <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
-                  {pendingCount}
-                </span>
-              )}
-            </Link>
-          </>
-        )}
-        <div className="ml-auto flex items-center gap-3">
-          {showJoin && (
-            <Link href="/join" className="hidden text-sm text-primary hover:underline sm:inline">
-              Join
-            </Link>
-          )}
+      <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:grid sm:grid-cols-[1fr_auto_1fr]">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="font-mono text-sm font-medium tracking-[0.2em] uppercase">
+            Experience<span className="text-primary">.</span>
+          </Link>
+          <MobileNav links={navLinks} />
+        </div>
+        <SegmentedNav links={navLinks} />
+        <div className="flex items-center justify-end gap-3">
           {viewer?.memberStatus === 'pending' && !viewer.isMember && (
             <span className="rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
               request pending
@@ -85,7 +65,7 @@ export async function SiteHeader() {
             <AccountMenu />
           </Show>
         </div>
-      </nav>
+      </div>
     </header>
   );
 }
