@@ -178,3 +178,35 @@ Same rules as likes: **anyone signed in** can rate a video they can watch (membe
 - Feed: "Top rated" sort chip (`?sort=rated`): ordered by average, then rating count, then newest. Videos with no ratings go last.
 
 **Done when:** rating, re-rating and removing all work and survive a reload; average and count are right with two accounts; card and "Top rated" reflect it; guests get the sign-in popup.
+
+## Phase 7 plan — Comments + replies (2026-11-12, approved)
+
+The `comments` table already exists (`parent_id` for replies, text CHECKed 1–2000 chars, cascade delete), so **no migration**.
+
+**Who can do what** (same rule as likes/ratings)
+- Read: anyone who can watch the video (guests on public videos too).
+- Write and reply: anyone signed in, on a video they can watch (members-only videos need membership). Guests see "Sign in to comment", which opens our popup.
+- Delete: your own comments; the owner can delete any comment.
+
+**API** (zod on every body, friendly errors, access via the shared `checkCanReact()`)
+- `POST /api/videos/[id]/comments` `{ text, parentId? }`: text is trimmed, 1–2000 characters. A reply to a reply attaches to its top-level comment (YouTube-style, one level deep), and `parentId` must belong to the same video.
+- `DELETE /api/comments/[commentId]`: author or owner only (403 otherwise). Deleting a top-level comment also deletes its replies (DB cascade).
+- Simple flood guard: at most 5 comments per user per minute (429 "Slow down a little.").
+
+**Data shown**
+- `src/lib/comments.ts`: `listComments(videoId)` returns top-level comments newest first (first 50, then "Show more") with their replies oldest first.
+- Author name and avatar come from Clerk (`clerkClient().users.getUserList({ userId: [...] })`, one batch call per page). Names are never stored in our DB. If Clerk is unreachable, show "Member" with an initial instead of failing the page.
+- A comment count shows next to the "Comments" heading.
+
+**UI** (one component per file)
+- `CommentsSection` (server) → `CommentForm` (client: textarea, live character count, Post), `CommentItem` (avatar, name, relative time like "3 h ago", text with line breaks, Reply / Delete), `ReplyList`.
+- After posting or deleting it calls `router.refresh()`, so the server stays the single source of truth. The form clears and shows "Posting…" while busy.
+- Plain text only (no links or markdown), so there's no HTML injection. React escapes the text.
+
+**Not in this phase:** editing comments, likes on comments, notifications, and reporting or moderation tools beyond owner delete.
+
+**Done when:** post / reply / delete work and survive a reload; a reply to a reply lands under the top-level comment; someone else's comment can't be deleted (403) except by the owner; guests get the sign-in popup; members-only rules hold.
+
+**Owner answers (2026-11-12):** deleting a top-level comment removes its replies too; 5 comments per minute per person is OK.
+
+**PRs:** (1) `feat/comments` — `src/lib/comments.ts` + the two API routes; (2) `feat/comments-ui` — the components and the video page.

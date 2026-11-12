@@ -7,12 +7,12 @@ import { getViewer } from '@/lib/auth';
 type ReactAccess = { userId: string } | { errorResponse: Response };
 
 /**
- * Who may like or rate a video: anyone signed in, for a video they can watch
+ * Who may like, rate or comment on a video: anyone signed in, for a video they can watch
  * (members-only videos need membership).
  */
 export async function checkCanReact(
   videoId: string,
-  action: 'like' | 'rate',
+  action: 'like' | 'rate' | 'comment',
 ): Promise<ReactAccess> {
   const viewer = await getViewer();
   if (!viewer.userId) {
