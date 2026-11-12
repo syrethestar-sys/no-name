@@ -133,10 +133,10 @@ Audience: **viewers can be anyone** (public videos, no requirements). Members ar
 
 ## Phase 5 plan — Likes (2026-11-12, approved)
 
-Members (and the owner) can like a video; one like per user per video. The `likes` table already exists (composite PK `videoId + userId`), so **no migration**.
+Anyone signed in can like a video they can watch (owner decision 2026-11-12: no join needed to like; members-only videos still need membership). One like per user per video. The `likes` table already exists (composite PK `videoId + userId`), so **no migration**.
 
-- `POST /api/videos/[id]/like` with body `{ liked: boolean }` (the state the viewer wants, so a double click or retry can't flip it twice): requires a signed-in **member** (`getViewer().isMember`) and a `ready` video, then `INSERT ... ON CONFLICT DO NOTHING` or `DELETE`. Returns `{ liked, likeCount }`. zod-validated. Friendly errors ("Could not save. Try again.").
+- `POST /api/videos/[id]/like` with body `{ liked: boolean }` (the state the viewer wants, so a double click or retry can't flip it twice): requires a signed-in user and a `ready` video; members-only videos also need `isMember` (403), then `INSERT ... ON CONFLICT DO NOTHING` or `DELETE`. Returns `{ liked, likeCount }`. zod-validated. Friendly errors ("Could not save. Try again.").
 - Counts are computed with SQL, never stored: the feed uses `left join likes` + `group by videos.id`; the video page uses `getLikeState()` in `src/lib/likes.ts` (count + whether the viewer liked it).
-- `src/components/like-button.tsx` (client): heart + count, optimistic update, rolls back on error. Guests see the count and a "Sign in to like" hint; signed-in non-members see "Join to like".
+- `src/components/like-button.tsx` (client): heart + count, optimistic update, rolls back on error. Guests see the count and a "Sign in to like" hint; on a locked video non-members see just the count (the page already shows the join prompt).
 - Feed card shows the like count. The "Most liked" filter chip is added to the feed (ordered by like count, then newest).
 - Done when: count updates, a second click un-likes, a second account adds a separate like, guests and non-members get 401/403 on the route.

@@ -10,7 +10,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 const LikeBody = z.object({ liked: z.boolean() });
 
-/** Members only: like or un-like a video. Body `{ liked }` is the state the viewer wants. */
+/** Signed-in viewers: like or un-like a video they can watch. Body `{ liked }` is the state the viewer wants. */
 export async function POST(request: Request, { params }: RouteContext) {
   const { id } = await params;
   if (!isVideoId(id)) return Response.json({ error: 'Video not found.' }, { status: 404 });
@@ -21,15 +21,18 @@ export async function POST(request: Request, { params }: RouteContext) {
   try {
     const viewer = await getViewer();
     if (!viewer.userId) return Response.json({ error: 'Sign in to like.' }, { status: 401 });
-    if (!viewer.isMember) return Response.json({ error: 'Join to like.' }, { status: 403 });
 
     const [video] = await getDb()
-      .select({ status: videos.status })
+      .select({ status: videos.status, visibility: videos.visibility })
       .from(videos)
       .where(eq(videos.id, id))
       .limit(1);
     if (video?.status !== 'ready') {
       return Response.json({ error: 'Video not found.' }, { status: 404 });
+    }
+    // Anyone signed in can like what they can watch; members-only videos need membership.
+    if (video.visibility === 'members' && !viewer.isMember) {
+      return Response.json({ error: 'This video is for members.' }, { status: 403 });
     }
 
     return Response.json(await setLike(id, viewer.userId, parsed.data.liked));
