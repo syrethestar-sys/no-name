@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { VideoOptionsFields } from '@/components/video-options-fields';
+import { makeSpeechAudio } from '@/lib/speech-audio';
 import { readVideoDetails, uploadToSignedUrl } from '@/lib/video-file';
 import type { VideoTopic, VideoVisibility } from '@/types/db';
 
@@ -18,7 +19,20 @@ type UploadUrls = {
   videoUploadUrl: string;
   thumbnailPath: string;
   thumbnailUploadUrl: string;
+  audioPath: string;
+  audioUploadUrl: string;
 };
+
+/** Uploads the speech-only audio if the browser made one. Any failure means "use the video". */
+async function uploadSpeechAudio(audio: Blob | null, urls: UploadUrls): Promise<string | null> {
+  if (!audio) return null;
+  try {
+    await uploadToSignedUrl(urls.audioUploadUrl, audio, 'audio/webm');
+    return urls.audioPath;
+  } catch {
+    return null;
+  }
+}
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {
@@ -39,6 +53,7 @@ export function UploadForm() {
   const [topic, setTopic] = useState<VideoTopic>('life');
   const [visibility, setVisibility] = useState<VideoVisibility>('members');
   const [progress, setProgress] = useState<number | null>(null);
+  const [isPreparingAudio, setIsPreparingAudio] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isUploading = progress !== null;
 
@@ -59,6 +74,8 @@ export function UploadForm() {
     setProgress(0);
 
     try {
+      // Runs alongside the video upload; the transcript is made from this small file.
+      const speechAudio = makeSpeechAudio(videoFile);
       const details = await readVideoDetails(videoFile);
       const urls = await postJson<UploadUrls>('/api/videos/upload-url', {
         contentType: videoFile.type,
@@ -68,11 +85,14 @@ export function UploadForm() {
       if (details.thumbnail) {
         await uploadToSignedUrl(urls.thumbnailUploadUrl, details.thumbnail, 'image/jpeg');
       }
+      setIsPreparingAudio(true);
+      const audioPath = await uploadSpeechAudio(await speechAudio, urls);
       const saved = await postJson<{ id: string }>('/api/videos', {
         title,
         description,
         videoPath: urls.videoPath,
         thumbnailPath: details.thumbnail ? urls.thumbnailPath : null,
+        audioPath,
         durationSeconds: details.durationSeconds,
         topic,
         visibility,
@@ -81,6 +101,7 @@ export function UploadForm() {
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Upload failed. Try again.');
       setProgress(null);
+      setIsPreparingAudio(false);
     }
   }
 
@@ -138,7 +159,11 @@ export function UploadForm() {
       {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
 
       <Button type="submit" size="lg" disabled={!videoFile || !title.trim() || isUploading}>
-        {isUploading ? `Uploading… ${Math.round(progress * 100)}%` : 'Upload video'}
+        {isPreparingAudio
+          ? 'Preparing audio for the transcript…'
+          : isUploading
+            ? `Uploading… ${Math.round(progress * 100)}%`
+            : 'Upload video'}
       </Button>
     </form>
   );
