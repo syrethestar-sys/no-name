@@ -50,19 +50,19 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 
 ## Phases (each = 1 small PR)
 
-| #   | Phase                                                                                                           | Done when                                                          |
-| --- | --------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 0   | Scaffold ✅: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens         | `npm run lint && typecheck && build` pass                          |
-| 1   | Clerk sign-in + admin role check helper ✅ merged, owner badge verified                                         | Owner and member see different nav                                 |
-| 2   | DB schema + Supabase connection + migrations ✅ migrated + verified on Supabase                                 | Tables exist                                                       |
-| 3   | Owner upload (signed URL) + feed grid + video page player ✅ code done (PR #3 + #4), owner browser test pending | Uploaded video plays on `/videos/[id]`                             |
-| 4   | **Membership** (new, see below): join request form, owner approval page, public/members video visibility        | Non-member can't get a members-only video URL; approved member can |
-| 5   | Likes (toggle)                                                                                                  | Count updates, one like per user                                   |
-| 6   | Ratings (1–5 stars)                                                                                             | Average shown on card + page                                       |
-| 7   | Comments + replies (add / reply / delete)                                                                       | zod-validated, friendly errors, replies shown under parent         |
-| 8   | n8n + HF transcript + Pinecone search + "related videos"                                                        | `/search` finds a video by meaning in Mongolian or English         |
-| 9a  | Facebook Page auto-post: n8n posts title + link when a video becomes `ready`                                    | Post appears on the owner's Page                                   |
-| 9b  | Wire.mn: supporter tips + optional paid videos (`priceMnt`)                                                     | Paid video unlocks only after the verified webhook                 |
+| #   | Phase                                                                                                                                                          | Done when                                                          |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| 0   | Scaffold ✅: Next.js + TS + Tailwind + shadcn, ESLint/Prettier/Husky, CI, `.env.example`, design tokens                                                        | `npm run lint && typecheck && build` pass                          |
+| 1   | Clerk sign-in + admin role check helper ✅ merged, owner badge verified                                                                                        | Owner and member see different nav                                 |
+| 2   | DB schema + Supabase connection + migrations ✅ migrated + verified on Supabase                                                                                | Tables exist                                                       |
+| 3   | Owner upload (signed URL) + feed grid + video page player ✅ code done (PR #3 + #4), owner browser test pending                                                | Uploaded video plays on `/videos/[id]`                             |
+| 4   | **Membership** (new, see below): join request form, owner approval page, public/members video visibility ✅ code done (PR #5 + #6), owner browser test pending | Non-member can't get a members-only video URL; approved member can |
+| 5   | Likes (toggle)                                                                                                                                                 | Count updates, one like per user                                   |
+| 6   | Ratings (1–5 stars)                                                                                                                                            | Average shown on card + page                                       |
+| 7   | Comments + replies (add / reply / delete)                                                                                                                      | zod-validated, friendly errors, replies shown under parent         |
+| 8   | n8n + HF transcript + Pinecone search + "related videos"                                                                                                       | `/search` finds a video by meaning in Mongolian or English         |
+| 9a  | Facebook Page auto-post: n8n posts title + link when a video becomes `ready`                                                                                   | Post appears on the owner's Page                                   |
+| 9b  | Wire.mn: supporter tips + optional paid videos (`priceMnt`)                                                                                                    | Paid video unlocks only after the verified webhook                 |
 
 ## Language (Mongolian + English)
 

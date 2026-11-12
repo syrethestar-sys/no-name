@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { unstable_rethrow } from 'next/navigation';
 import { TopicChips } from '@/components/topic-chips';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
@@ -19,6 +20,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     isOwner = viewer.isOwner;
     videos = await listReadyVideos({ viewerIsMember: viewer.isMember, topic: topic ?? undefined });
   } catch (error) {
+    unstable_rethrow(error); // let Next's own signals (dynamic rendering, redirects) through
     console.error('feed failed', error);
     loadFailed = true;
   }
