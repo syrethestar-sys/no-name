@@ -11,16 +11,16 @@ Community site where the owner uploads videos of their experiences. Visitors sig
 
 ## Stack (from the Pinebaatars stack docs)
 
-| Service                                                  | Job here                                                                    |
-| -------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Next.js (App Router) + TypeScript + Tailwind + shadcn/ui | pages + API routes                                                          |
-| Clerk                                                    | sign in; read `userId` on the server with `auth()`. Supabase Auth stays OFF |
-| Supabase                                                 | Postgres + Storage (video files, thumbnails)                                |
-| Drizzle                                                  | typed queries, schema in `src/db/schema.ts`                                 |
-| Hugging Face                                             | whisper-large-v3 transcripts, multilingual MiniLM embeddings (384 dims)     |
-| Pinecone                                                 | search videos by meaning (transcript + title)                               |
-| n8n                                                      | background jobs (transcribe after upload) with secret webhook header        |
-| Wire.mn / Facebook Graph API                             | later phases only (see plan)                                                |
+| Service                                                  | Job here                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Next.js (App Router) + TypeScript + Tailwind + shadcn/ui | pages + API routes                                                            |
+| Clerk                                                    | sign in; read `userId` on the server with `auth()`. Supabase Auth stays OFF   |
+| Supabase                                                 | Postgres + Storage (video files, thumbnails)                                  |
+| Drizzle                                                  | typed queries, schema in `src/db/schema.ts`                                   |
+| Groq (free plan)                                         | whisper-large-v3 transcripts (replaces Hugging Face, which is no longer free) |
+| Pinecone                                                 | search by meaning; integrated `multilingual-e5-large` embeddings (1024 dims)  |
+| n8n                                                      | background jobs (transcribe after upload) with secret webhook header          |
+| Wire.mn / Facebook Graph API                             | later phases only (see plan)                                                  |
 
 ## Folder structure
 
@@ -32,7 +32,7 @@ src/
   db/
     schema.ts     Drizzle tables
     index.ts      db connection
-  lib/            service clients (supabase.ts, hf.ts, pinecone.ts, wire.ts)
+  lib/            service clients (supabase.ts, groq.ts, pinecone.ts, wire.ts)
   types/          shared TS types
 NOTES/            plans + handoff notes
 .env.example      keys, no values

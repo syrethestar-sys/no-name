@@ -1,7 +1,9 @@
+import { after } from 'next/server';
 import { z } from 'zod';
 import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { getAdminUserId } from '@/lib/auth';
+import { transcribeVideo } from '@/lib/transcribe';
 
 // Paths must be the ones /api/videos/upload-url handed out: a uuid in our folders.
 const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
@@ -22,6 +24,9 @@ const Body = z.object({
   visibility: z.enum(['public', 'members']).default('members'),
   topic: z.enum(['trading', 'coding', 'life']).default('life'),
 });
+
+// The transcript job runs inside this function after the response (see after() below).
+export const maxDuration = 300;
 
 /** Owner only: saves a video row after the files are uploaded. */
 export async function POST(request: Request) {
@@ -46,9 +51,12 @@ export async function POST(request: Request) {
         durationSeconds,
         visibility,
         topic,
-        status: 'ready', // Phase 8 adds transcripts separately (transcript IS NULL = not yet).
+        status: 'ready', // watchable now; the transcript follows in the background
       })
       .returning({ id: videos.id });
+    // Runs after the response is sent. Until n8n is set up this is the only trigger;
+    // the owner's "Transcribe" button retries failures.
+    after(() => transcribeVideo(video.id));
     return Response.json({ id: video.id }, { status: 201 });
   } catch (error) {
     console.error('save video failed', error);

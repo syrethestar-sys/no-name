@@ -262,3 +262,10 @@ Goal: `/search?q=` finds a video by what is *said* in it, in Mongolian or Englis
 **Done when:** an uploaded video gets a transcript and language automatically (or via the owner button); `/search` finds it with words from the speech in English and in Mongolian; a members-only result shows no snippet to a non-member; related videos appear; deleting a video removes its vectors.
 
 **Owner answers (2026-11-12):** no n8n yet, so the upload route starts the job directly (Next.js `after()`) and the owner button retries; n8n is added later as the retry layer (the job route and workflow file still get built). Show the transcript on the video page, collapsed.
+
+**Provider change (2026-11-12, owner wants free only; the owner set up Groq + Pinecone).** This replaces the Hugging Face parts above:
+- Speech → text: **Groq** `whisper-large-v3` (free plan: ~2 h of audio per hour, **25 MB per file**). Tested: it accepts `.mp4` directly and returns the detected language. Files over 25 MB are marked `failed` ("too big for free transcription") for now; extracting the audio in the browser (plan B) comes later if needed.
+- Embeddings: **Pinecone integrated embedding** `multilingual-e5-large` (1024 dims, free on Starter). Pinecone embeds the text itself, so there's no embedding model in our code. Tested: Mongolian queries find English text and the other way round.
+- The index has a document schema (one field, `chunk_text`), so it uses Pinecone's **documents API** (`/namespaces/{ns}/documents/upsert|search|fetch|list|delete`, header `X-Pinecone-API-Version: 2026-07`) through plain `fetch`. The SDK isn't needed.
+- Chunks: ~200 words (e5 reads up to 512 tokens). Scores sit close together (0.70–0.88), so search drops matches well below the best one.
+- Env: `GROQ_API_KEY`, `PINECONE_API_KEY`, `PINECONE_INDEX`. `HF_TOKEN` isn't used.
