@@ -2,10 +2,12 @@ import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
 import { SortChips } from '@/components/sort-chips';
 import { TopicChips } from '@/components/topic-chips';
+import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
+import { SORT_LABELS } from '@/lib/labels';
 import {
   countReadyVideosByTopic,
   isFeedSort,
@@ -43,6 +45,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     loadFailed = true;
   }
 
+  // The first video (newest, or most liked/rated) is shown big; the rest go in the grid.
+  const [featuredVideo, ...gridVideos] = videos;
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       <PageHeading
@@ -78,8 +83,14 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       )}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {videos.map((video) => (
+      {featuredVideo && (
+        <div className="mt-6">
+          <FeaturedVideo video={featuredVideo} label={SORT_LABELS[sort]} />
+        </div>
+      )}
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {gridVideos.map((video) => (
           <VideoCard key={video.id} video={video} />
         ))}
       </div>

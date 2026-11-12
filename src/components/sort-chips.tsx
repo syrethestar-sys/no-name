@@ -1,12 +1,7 @@
 import Link from 'next/link';
+import { SORT_LABELS } from '@/lib/labels';
 import { feedHref, FEED_SORTS, type FeedSort } from '@/lib/videos';
 import type { VideoTopic } from '@/types/db';
-
-const SORT_LABELS: Record<FeedSort, string> = {
-  newest: 'Newest',
-  liked: 'Most liked',
-  rated: 'Top rated',
-};
 
 const chipClass =
   'flex h-7 items-center rounded-[10px] px-2.5 text-xs shadow-[inset_0_1px_0_var(--glass-edge)] transition-colors';
