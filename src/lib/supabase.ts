@@ -9,6 +9,11 @@ export const VIDEO_TYPES = {
   'video/quicktime': 'mov',
 } as const;
 export type VideoContentType = keyof typeof VIDEO_TYPES;
+/** The speech-only copy the browser makes for transcription (Opus in webm). */
+export const AUDIO_CONTENT_TYPE = 'audio/webm';
+export const newAudioPath = (fileId: string) => `audio/${fileId}.webm`;
+export const AUDIO_PATH_PATTERN =
+  /^audio\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webm$/;
 
 /** How long a viewer's signed playback / thumbnail URL stays valid. */
 export const SIGNED_URL_SECONDS = 60 * 60;

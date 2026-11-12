@@ -329,3 +329,27 @@ Same look as the new feed. Looks only: no data, routes or behavior change.
 - The locked-video teaser gets the same rounded, borderless look.
 
 Each PR stays under 300 lines. Checked at desktop and phone width before merging.
+
+## Big videos plan — transcripts for files over 25 MB (2026-11-13, approved)
+
+**Problem:** Groq's free plan takes at most 25 MB per file. A 1-minute phone video is often 50–150 MB, so real videos would get no transcript and no search.
+
+**Fix: send Groq only the sound.** At upload, the browser pulls the audio out of the video and re-encodes it as small speech-quality audio (Opus, mono, 24 kbps, about 11 MB per hour). The video itself is uploaded unchanged.
+- Library: **Mediabunny** (MPL-2.0, no server, uses the browser's built-in WebCodecs). It reads mp4/mov/webm and writes a `.webm` audio file. Its only cost is page size on the upload page, which only the owner opens.
+- The audio is stored next to the video in the private bucket as `audio/<id>.webm`. A new nullable column `videos.audio_path` (migration) records it.
+- The transcribe job uses the audio file if there is one. Otherwise it uses the video if it's under 25 MB, and otherwise marks "too big" as now.
+- If the browser can't extract the audio (old Safari or Firefox without WebCodecs), the upload still works. It just falls back to the old rule.
+- **Old videos:** the owner's Transcribe/Redo button does the same thing in the owner's browser. It downloads the video, extracts the audio, uploads it, then transcribes.
+- Deleting a video also deletes its audio file.
+- About 2 hours of speech fits in 25 MB. Anything longer is still "too big".
+
+**⚠ Separate limit found while planning:** uploads are capped at **50 MB** because that's the largest file Supabase's **free** plan allows. A typical 1080p phone video hits that after about 1–3 minutes. Options (owner decides, not part of this PR):
+1. **Shrink the video in the browser before upload** (same library, re-encode to 720p). Free, but slow for long videos, and 50 MB is still only ~5–8 minutes at 720p.
+2. **Cloudflare R2 for video files** (free: 10 GB storage, no download fees, files up to 5 GB). Videos move there, everything else stays on Supabase. A bigger change, done as its own plan.
+3. Supabase Pro ($25/month): 100 GB storage, large files.
+
+**PRs:** (1) migration, `audio_path`, server job prefers audio, delete cleans up; (2) browser audio extraction in the upload form and the owner button. Each under 300 lines.
+
+**Owner answer (2026-11-13):** build the audio plan; for the 50 MB limit, move video files to **Cloudflare R2** (its own plan next).
+
+**Done when:** a video over 25 MB uploads, gets a transcript automatically and is found by `/search`; an old video gets one through the owner button; a browser without WebCodecs still uploads fine.

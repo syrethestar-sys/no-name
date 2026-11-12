@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { getAdminUserId } from '@/lib/auth';
+import { AUDIO_PATH_PATTERN } from '@/lib/supabase';
 import { startTranscription } from '@/lib/transcribe';
 
 // Paths must be the ones /api/videos/upload-url handed out: a uuid in our folders.
@@ -15,6 +16,8 @@ const Body = z.object({
     .string()
     .regex(new RegExp(`^thumbnails/${uuidPattern}\\.jpg$`))
     .nullable(),
+  /** Set only when the browser managed to extract and upload the audio. */
+  audioPath: z.string().regex(AUDIO_PATH_PATTERN).nullable().default(null),
   durationSeconds: z
     .number()
     .int()
@@ -38,8 +41,16 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Title is required (max 120 characters).' }, { status: 400 });
   }
 
-  const { title, description, videoPath, thumbnailPath, durationSeconds, visibility, topic } =
-    parsed.data;
+  const {
+    title,
+    description,
+    videoPath,
+    thumbnailPath,
+    audioPath,
+    durationSeconds,
+    visibility,
+    topic,
+  } = parsed.data;
   try {
     const [video] = await getDb()
       .insert(videos)
@@ -48,6 +59,7 @@ export async function POST(request: Request) {
         description,
         storagePath: videoPath,
         thumbnailPath,
+        audioPath,
         durationSeconds,
         visibility,
         topic,
