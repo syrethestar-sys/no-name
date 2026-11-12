@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { unstable_rethrow } from 'next/navigation';
+import { SearchIcon } from 'lucide-react';
+import { PageHeading } from '@/components/page-heading';
 import { VideoCard } from '@/components/video-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,22 +30,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-semibold tracking-tight">Search</h1>
-      <p className="mt-1 text-muted-foreground">
-        Describe what you remember, in English or Mongolian. It searches what is said in the videos.
-      </p>
+    <main className="mx-auto max-w-7xl px-4 py-12">
+      <PageHeading title="Search" eyebrow="by meaning · English or Mongolian">
+        Describe what you remember. It searches what is said in the videos.
+      </PageHeading>
 
-      <form action="/search" className="mt-6 flex max-w-2xl gap-2">
+      <form
+        action="/search"
+        className="glass-panel relative mt-8 flex max-w-2xl items-center p-1.5 focus-within:ring-2 focus-within:ring-ring/50"
+      >
+        <SearchIcon className="ml-3 size-4 shrink-0 text-muted-foreground" aria-hidden />
         <Input
           name="q"
           defaultValue={query}
           placeholder="the trip where it snowed…"
           aria-label="Search videos"
           maxLength={200}
-          className="h-10"
+          className="h-10 border-0 bg-transparent focus-visible:ring-0 dark:bg-transparent"
         />
-        <Button type="submit" className="h-10">
+        <Button type="submit" className="h-9 rounded-lg px-4">
           Search
         </Button>
       </form>
@@ -63,12 +68,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       )}
 
       {outcome && outcome.results.length > 0 && (
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {outcome.results.map((result) => (
             <div key={result.id} className="flex flex-col gap-2">
               <VideoCard video={result} />
               {result.snippet && (
-                <p className="line-clamp-3 px-1 text-sm text-muted-foreground">
+                <p className="line-clamp-3 border-l-2 border-primary/40 pl-3 text-sm text-muted-foreground italic">
                   “{result.snippet}”
                 </p>
               )}

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SignInButton } from '@/components/auth/sign-in-button';
 import { JoinForm } from '@/components/join-form';
+import { PageHeading } from '@/components/page-heading';
 import { getViewer } from '@/lib/auth';
 import { reapplyDate } from '@/lib/members';
 
@@ -8,7 +9,7 @@ export const metadata = { title: 'Join · Experience Community' };
 
 function Notice({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
-    <div className="rounded-xl border bg-card p-6">
+    <div className="glass-panel p-6">
       <h2 className="font-medium">{title}</h2>
       {children && <div className="mt-2 text-sm text-muted-foreground">{children}</div>}
     </div>
@@ -48,7 +49,7 @@ export default async function JoinPage() {
     );
   } else {
     content = (
-      <div className="rounded-xl border bg-card p-6">
+      <div className="glass-panel p-6">
         <JoinForm />
       </div>
     );
@@ -56,11 +57,10 @@ export default async function JoinPage() {
 
   return (
     <main className="mx-auto max-w-xl px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">Join the community</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <PageHeading title="Join the community" eyebrow="membership" size="small">
         A small group of people who grow together. Anyone can watch the public videos; members see
         everything. The owner reviews every request.
-      </p>
+      </PageHeading>
       <div className="mt-8">{content}</div>
     </main>
   );
