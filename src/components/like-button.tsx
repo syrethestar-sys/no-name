@@ -1,13 +1,12 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
 import { SignInButton } from '@clerk/nextjs';
 import { HeartIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-/** Why the viewer can't like: shown as a hint next to the count. */
-export type LikeBlocker = 'signed-out' | 'not-member' | 'pending' | null;
+/** Why the viewer can't like. A locked video already shows its own join prompt. */
+export type LikeBlocker = 'signed-out' | 'locked' | null;
 
 type LikeResponse = { liked: boolean; likeCount: number };
 
@@ -70,11 +69,6 @@ export function LikeButton({
               Sign in to like
             </button>
           </SignInButton>
-        )}
-        {blocker === 'not-member' && (
-          <Link href="/join" className={hintClass}>
-            Join to like
-          </Link>
         )}
       </div>
     );
