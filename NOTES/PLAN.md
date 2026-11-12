@@ -211,7 +211,7 @@ The `comments` table already exists (`parent_id` for replies, text CHECKed 1–2
 
 **PRs:** (1) `feat/comments` — `src/lib/comments.ts` + the two API routes; (2) `feat/comments-ui` — the components and the video page.
 
-## Phase 8 plan — Transcripts + search by meaning (2026-11-12, waiting for owner OK)
+## Phase 8 plan — Transcripts + search by meaning (2026-11-12, approved)
 
 Goal: `/search?q=` finds a video by what is *said* in it, in Mongolian or English, and each video page shows "Related videos". Videos stay watchable right after upload; the transcript arrives later in the background.
 
@@ -261,6 +261,4 @@ Goal: `/search?q=` finds a video by what is *said* in it, in Mongolian or Englis
 
 **Done when:** an uploaded video gets a transcript and language automatically (or via the owner button); `/search` finds it with words from the speech in English and in Mongolian; a members-only result shows no snippet to a non-member; related videos appear; deleting a video removes its vectors.
 
-**Questions for the owner** (defaults in brackets)
-1. Do you have an n8n instance yet? [If not: build everything, and use the owner "Transcribe" button plus an automatic call from the upload route until n8n is set up. n8n stays the retry layer once it exists.]
-2. Show the transcript on the video page to viewers? [yes, collapsed]
+**Owner answers (2026-11-12):** no n8n yet, so the upload route starts the job directly (Next.js `after()`) and the owner button retries; n8n is added later as the retry layer (the job route and workflow file still get built). Show the transcript on the video page, collapsed.
