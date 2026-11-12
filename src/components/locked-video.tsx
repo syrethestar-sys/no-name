@@ -22,7 +22,7 @@ export function LockedVideo({
   const showJoinButton = memberStatus === null || memberStatus === 'rejected';
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-xl border bg-secondary">
+    <div className="relative aspect-video overflow-hidden rounded-xl bg-thumb">
       {posterUrl && (
         <Image
           src={posterUrl}
