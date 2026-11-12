@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { DeleteVideoButton } from '@/components/delete-video-button';
-import { LikeButton, type LikeBlocker } from '@/components/like-button';
+import { LikeButton, type ReactionBlocker } from '@/components/like-button';
 import { LockedVideo } from '@/components/locked-video';
 import { VisibilityToggle } from '@/components/visibility-toggle';
 import { getViewer } from '@/lib/auth';
 import { formatDate, formatDuration } from '@/lib/format';
 import { TOPIC_LABELS, VISIBILITY_LABELS } from '@/lib/labels';
+import { StarRating } from '@/components/star-rating';
 import { getLikeState } from '@/lib/likes';
+import { getRatingState } from '@/lib/ratings';
 import { getVideoForPage } from '@/lib/videos';
 
-function likeBlockerFor(userId: string | null, isLocked: boolean): LikeBlocker {
+function reactionBlockerFor(userId: string | null, isLocked: boolean): ReactionBlocker {
   if (!userId) return 'signed-out';
   return isLocked ? 'locked' : null;
 }
@@ -30,7 +32,11 @@ export default async function VideoPage({ params }: VideoPageProps) {
   const video = await getVideoForPage(id, viewer.isMember);
   if (!video) notFound();
 
-  const likeState = await getLikeState(video.id, viewer.userId);
+  const [likeState, ratingState] = await Promise.all([
+    getLikeState(video.id, viewer.userId),
+    getRatingState(video.id, viewer.userId),
+  ]);
+  const reactionBlocker = reactionBlockerFor(viewer.userId, video.isLocked);
   const duration = formatDuration(video.durationSeconds);
 
   return (
@@ -58,13 +64,14 @@ export default async function VideoPage({ params }: VideoPageProps) {
             {formatDate(video.createdAt)}
             {duration && ` · ${duration}`}
           </p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-start gap-x-6 gap-y-3">
             <LikeButton
               videoId={video.id}
               initialLiked={likeState.liked}
               initialCount={likeState.likeCount}
-              blocker={likeBlockerFor(viewer.userId, video.isLocked)}
+              blocker={reactionBlocker}
             />
+            <StarRating videoId={video.id} initialRating={ratingState} blocker={reactionBlocker} />
           </div>
         </div>
         {viewer.isOwner && (

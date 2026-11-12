@@ -19,3 +19,8 @@ const dateFormatter = new Intl.DateTimeFormat('en', {
 export function formatDate(date: Date): string {
   return dateFormatter.format(date);
 }
+
+/** 4.25 → "4.3" (one decimal); null → "–". */
+export function formatRating(average: number | null): string {
+  return average === null ? '–' : average.toFixed(1);
+}

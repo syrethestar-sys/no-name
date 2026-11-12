@@ -164,3 +164,17 @@ Owner wants no Clerk-looking UI: no Clerk modal, no "Secured by Clerk", no "Deve
 - Size: about 4 components + 2 pages, ~350 lines. Will split into two PRs if it goes over: (1) form + popup + pages, (2) account menu.
 
 **Done when:** sign in with email code and with Google from the popup and from `/sign-in`; a new email creates an account; sign out works; no Clerk-branded UI appears anywhere on the site; owner badge, Upload and Members links still work.
+
+## Phase 6 plan — Ratings, 1–5 stars (2026-11-12, approved)
+
+Same rules as likes: **anyone signed in** can rate a video they can watch (members-only videos need membership). The `ratings` table already exists (one row per user per video, stars CHECKed 1–5), so **no migration**.
+
+- `PUT /api/videos/[id]/rating` body `{ stars: 1–5 }` (zod): insert, or update on conflict (re-rating changes your stars, `updated_at` = now). `DELETE` the same path removes your rating. Returns `{ myStars, average, count }`. 401 guest / 403 members-only for non-members / 404 missing.
+- Average and count computed with SQL (`avg(stars)`, `count(*)`), never stored.
+- `src/lib/ratings.ts`: `getRatingState(videoId, userId)` for the video page, `setRating()` / `clearRating()`.
+- `StarRating` (client): 5 stars, hover preview, click to rate, click your current star again to remove it; keyboard (arrow keys) + screen-reader labels ("Rate 4 out of 5"). Optimistic update with rollback ("Could not save. Try again."). Guests: "Sign in to rate" opens our sign-in popup.
+- Video page: stars under the title next to the like button, with "4.3 · 12 ratings" (or "No ratings yet").
+- Feed card: "★ 4.3" next to the like count (hidden when no ratings).
+- Feed: "Top rated" sort chip (`?sort=rated`): ordered by average, then rating count, then newest. Videos with no ratings go last.
+
+**Done when:** rating, re-rating and removing all work and survive a reload; average and count are right with two accounts; card and "Top rated" reflect it; guests get the sign-in popup.

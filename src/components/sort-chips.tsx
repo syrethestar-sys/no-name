@@ -3,7 +3,11 @@ import { activeChipClass, chipClass, idleChipClass } from '@/components/topic-ch
 import { feedHref, FEED_SORTS, type FeedSort } from '@/lib/videos';
 import type { VideoTopic } from '@/types/db';
 
-const SORT_LABELS: Record<FeedSort, string> = { newest: 'Newest', liked: 'Most liked' };
+const SORT_LABELS: Record<FeedSort, string> = {
+  newest: 'Newest',
+  liked: 'Most liked',
+  rated: 'Top rated',
+};
 
 export function SortChips({
   activeSort,
