@@ -18,6 +18,10 @@ import {
 
 export const videoStatus = pgEnum('video_status', ['processing', 'ready', 'failed']);
 export const videoLanguage = pgEnum('video_language', ['mn', 'en']);
+export const videoVisibility = pgEnum('video_visibility', ['public', 'members']);
+export const videoTopic = pgEnum('video_topic', ['trading', 'coding', 'life']);
+export const memberStatus = pgEnum('member_status', ['pending', 'approved', 'rejected']);
+export const memberInterest = pgEnum('member_interest', ['trading', 'coding', 'sharing', 'other']);
 
 export const videos = pgTable('videos', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -26,7 +30,10 @@ export const videos = pgTable('videos', {
   storagePath: text('storage_path').notNull(),
   thumbnailPath: text('thumbnail_path'),
   durationSeconds: integer('duration_seconds'),
-  language: videoLanguage('language'), // set by whisper in Phase 7
+  // Members-only by default: the owner opts a video into being a public teaser.
+  visibility: videoVisibility('visibility').notNull().default('members'),
+  topic: videoTopic('topic').notNull().default('life'),
+  language: videoLanguage('language'), // set by whisper in Phase 8
   transcript: text('transcript'),
   status: videoStatus('status').notNull().default('processing'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -79,5 +86,27 @@ export const comments = pgTable(
     index('comments_video_created_idx').on(table.videoId, table.createdAt),
     index('comments_parent_idx').on(table.parentId),
     check('comments_text_length', sql`char_length(${table.text}) between 1 and 2000`),
+  ],
+).enableRLS();
+
+// Join requests and membership. Our DB is the single source of truth;
+// the owner (Clerk role "admin") always counts as a member without a row here.
+export const members = pgTable(
+  'members',
+  {
+    userId: text('user_id').primaryKey(), // Clerk user id
+    status: memberStatus('status').notNull().default('pending'),
+    interests: memberInterest('interests')
+      .array()
+      .notNull()
+      .default(sql`'{}'`),
+    intro: text('intro').notNull(),
+    link: text('link'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+  },
+  (table) => [
+    index('members_status_created_idx').on(table.status, table.createdAt),
+    check('members_intro_length', sql`char_length(${table.intro}) between 20 and 1000`),
   ],
 ).enableRLS();

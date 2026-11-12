@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { VideoOptionsFields } from '@/components/video-options-fields';
 import { readVideoDetails, uploadToSignedUrl } from '@/lib/video-file';
+import type { VideoTopic, VideoVisibility } from '@/types/db';
 
 const MAX_BYTES = 50_000_000; // same as the bucket limit
 const ACCEPTED_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
@@ -34,6 +36,8 @@ export function UploadForm() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [topic, setTopic] = useState<VideoTopic>('life');
+  const [visibility, setVisibility] = useState<VideoVisibility>('members');
   const [progress, setProgress] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isUploading = progress !== null;
@@ -70,6 +74,8 @@ export function UploadForm() {
         videoPath: urls.videoPath,
         thumbnailPath: details.thumbnail ? urls.thumbnailPath : null,
         durationSeconds: details.durationSeconds,
+        topic,
+        visibility,
       });
       router.push(`/videos/${saved.id}`);
     } catch (error) {
@@ -112,6 +118,14 @@ export function UploadForm() {
           onChange={(event) => setDescription(event.target.value)}
         />
       </div>
+
+      <VideoOptionsFields
+        topic={topic}
+        visibility={visibility}
+        disabled={isUploading}
+        onTopicChange={setTopic}
+        onVisibilityChange={setVisibility}
+      />
 
       {isUploading && (
         <div className="h-2 overflow-hidden rounded-full bg-secondary" aria-label="Upload progress">

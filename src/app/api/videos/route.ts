@@ -19,6 +19,8 @@ const Body = z.object({
     .nonnegative()
     .max(24 * 60 * 60)
     .nullable(),
+  visibility: z.enum(['public', 'members']).default('members'),
+  topic: z.enum(['trading', 'coding', 'life']).default('life'),
 });
 
 /** Owner only: saves a video row after the files are uploaded. */
@@ -31,7 +33,8 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Title is required (max 120 characters).' }, { status: 400 });
   }
 
-  const { title, description, videoPath, thumbnailPath, durationSeconds } = parsed.data;
+  const { title, description, videoPath, thumbnailPath, durationSeconds, visibility, topic } =
+    parsed.data;
   try {
     const [video] = await getDb()
       .insert(videos)
@@ -41,7 +44,9 @@ export async function POST(request: Request) {
         storagePath: videoPath,
         thumbnailPath,
         durationSeconds,
-        status: 'ready', // Phase 7 adds transcripts separately (transcript IS NULL = not yet).
+        visibility,
+        topic,
+        status: 'ready', // Phase 8 adds transcripts separately (transcript IS NULL = not yet).
       })
       .returning({ id: videos.id });
     return Response.json({ id: video.id }, { status: 201 });
