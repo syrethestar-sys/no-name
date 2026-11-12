@@ -21,6 +21,11 @@ const eslintConfig = [
     },
   },
   {
+    // One-off CLI scripts print to the terminal on purpose.
+    files: ['scripts/**'],
+    rules: { 'no-console': 'off' },
+  },
+  {
     ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
   },
 ];

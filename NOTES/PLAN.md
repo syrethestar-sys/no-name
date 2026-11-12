@@ -77,3 +77,25 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 - The DB enforces the rules too: likes/ratings use a composite primary key (one per user per video), `stars` is CHECKed 1–5, comment `text` is CHECKed 1–2000 characters, and `parent_id` self-references with cascade delete.
 - `priceMnt`, `facebookPostId` and `orders` are left out until Phase 8 (added by a later migration).
 - Scripts: `npm run db:generate` (writes SQL to `drizzle/`), `npm run db:migrate` (applies it), `npm run db:studio`.
+
+## Phase 3 plan (2026-11-12) — upload, feed, player
+
+Split into two PRs so each stays reviewable (rule: under ~300 lines of hand-written code):
+
+**3a — Storage + owner upload** (`feat/video-upload`)
+- Supabase Storage bucket `videos`, **private**, 50 MB limit, allowed types: mp4 / webm / quicktime / jpeg. Created once by `npm run storage:setup`.
+  Private, because Phase 8 has paid videos. Viewers get short-lived signed URLs.
+- `src/lib/supabase.ts`: server-only storage client (service role key), created lazily.
+- `src/db/index.ts`: `getDb()` creates the connection lazily, so `next build` in CI works without DATABASE_URL (no GitHub secret needed).
+- `POST /api/videos/upload-url`: admin only + zod (type, size ≤ 50 MB) → signed upload URLs for `videos/<id>.<ext>` and `thumbnails/<id>.jpg`.
+- The browser PUTs the file straight to Supabase (no Next.js body limit). It also grabs a thumbnail frame + duration from the video with `<canvas>`.
+- `POST /api/videos`: admin only + zod → inserts the row with `status = 'ready'`.
+  (Phase 7 adds transcripts separately: `transcript IS NULL` = not transcribed yet. `status` stays the upload state.)
+- `/upload` page (owner only, otherwise 404) with `UploadForm`.
+- shadcn/ui is installed here. Our dark palette is mapped onto shadcn's token names.
+
+**3b — Feed + video page** (`feat/video-feed`, stacked on 3a)
+- `/` grid of `VideoCard`s (thumbnail, title, duration, date), newest first, signed thumbnail URLs.
+  Filter chips (Most liked / Top rated) arrive with Phases 4–5.
+- `/videos/[id]`: `<video controls>` with a signed URL (1 h), title, description, date. 404 when missing.
+- Owner-only delete button + `DELETE /api/videos/[id]` (removes the storage files + row; likes/ratings/comments cascade).

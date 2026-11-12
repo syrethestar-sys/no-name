@@ -5,6 +5,7 @@ import { dark } from '@clerk/ui/themes';
 import { SiteHeader } from '@/components/site-header';
 import './globals.css';
 
+// Cyrillic subsets so Mongolian titles and comments render in the same font.
 const inter = Inter({ variable: '--font-inter', subsets: ['latin', 'cyrillic'] });
 const jetbrainsMono = JetBrains_Mono({
   variable: '--font-jetbrains-mono',
@@ -18,8 +19,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+      <body className="antialiased">
         <ClerkProvider appearance={{ theme: dark, variables: { colorPrimary: '#5fd38d' } }}>
           <SiteHeader />
           {children}
