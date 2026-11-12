@@ -2,6 +2,7 @@ import 'server-only';
 import { and, avg, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { getDb } from '@/db';
 import { likes, ratings, videos } from '@/db/schema';
+import { videoPlaybackUrl } from '@/lib/stored-video';
 import { SIGNED_URL_SECONDS, videoStorage } from '@/lib/supabase';
 import type { Video, VideoTopic } from '@/types/db';
 
@@ -176,16 +177,16 @@ export async function getVideoForPage(
   if (!video || video.status !== 'ready') return null;
 
   const isLocked = isLockedFor(video.visibility, viewerIsMember);
-  const storage = videoStorage();
-  const [playback, poster] = await Promise.all([
-    isLocked ? null : storage.createSignedUrl(video.storagePath, SIGNED_URL_SECONDS),
-    video.thumbnailPath ? storage.createSignedUrl(video.thumbnailPath, SIGNED_URL_SECONDS) : null,
+  const [playbackUrl, poster] = await Promise.all([
+    isLocked ? null : videoPlaybackUrl(video, SIGNED_URL_SECONDS),
+    video.thumbnailPath
+      ? videoStorage().createSignedUrl(video.thumbnailPath, SIGNED_URL_SECONDS)
+      : null,
   ]);
-  if (playback?.error) throw playback.error;
 
   return {
     ...video,
-    playbackUrl: playback?.data?.signedUrl ?? null,
+    playbackUrl,
     posterUrl: poster?.data?.signedUrl ?? null,
     isLocked,
   };

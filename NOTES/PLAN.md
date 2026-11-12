@@ -353,3 +353,24 @@ Each PR stays under 300 lines. Checked at desktop and phone width before merging
 **Owner answer (2026-11-13):** build the audio plan; for the 50 MB limit, move video files to **Cloudflare R2** (its own plan next).
 
 **Done when:** a video over 25 MB uploads, gets a transcript automatically and is found by `/search`; an old video gets one through the owner button; a browser without WebCodecs still uploads fine.
+
+## R2 plan — video files on Cloudflare R2, up to 2 GB each (2026-11-13, approved)
+
+**Why:** Supabase's free plan stops files at 50 MB. Cloudflare R2's free tier gives 10 GB of storage, no download (egress) fees, and single uploads up to 5 GB.
+
+**What moves:** only new **video files**. Thumbnails and speech audio are small, so they stay in Supabase. The existing test video stays where it is.
+- New column `videos.storage_provider` (`supabase` | `r2`, default `supabase`, migration). Playback links, transcript download and delete each pick the right place by this column. Old rows keep working.
+- `src/lib/r2.ts` (server-only) makes signed R2 links with the tiny `aws4fetch` library (Cloudflare's recommended S3 signer, no AWS SDK). Signed **PUT** links for the owner's browser upload, and signed **GET** links (1 hour) for playback. The bucket stays private, so members-only videos stay protected the same way as now.
+- Upload: `upload-url` returns an R2 link for the video. The limit goes from 50 MB to **2 GB** per file (my choice, so 10 GB holds at least 5 videos). The thumbnail and audio flow is unchanged.
+- Delete removes the R2 object.
+
+**Owner setup (I'll give click-by-click steps; I never see the values):**
+1. Free Cloudflare account → R2 → enable it. Cloudflare asks for a card even on the free tier, but nothing is charged under 10 GB.
+2. Create a bucket `no-name-videos` (private) and paste a CORS rule I provide (allows PUT/GET from `http://localhost:3005`, plus the real site address later).
+3. Create an R2 API token (Object Read & Write, this bucket only) → `.env.local`: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET=no-name-videos`.
+
+**Limits:** 10 GB in total for free (about 1–2 hours of 1080p phone video). After that, $0.015 per GB per month. Browser uploads of very big files need a steady connection, and a failed upload starts over (no resume in this version).
+
+**PRs:** (1) migration, `r2.ts`, playback/download/delete by provider; (2) upload goes to R2, and the 2 GB limit plus UI text. Each under 300 lines.
+
+**Done when:** a video over 50 MB uploads, plays for members only (a guest gets no link), gets a transcript, and deleting it removes it from R2.

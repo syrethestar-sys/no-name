@@ -21,6 +21,8 @@ export const videoLanguage = pgEnum('video_language', ['mn', 'en']);
 export const videoVisibility = pgEnum('video_visibility', ['public', 'members']);
 export const videoTopic = pgEnum('video_topic', ['trading', 'coding', 'life']);
 export const transcriptStatus = pgEnum('transcript_status', ['pending', 'done', 'failed']);
+/** Where the video file lives: Supabase Storage (≤ 50 MB) or Cloudflare R2 (≤ 2 GB). */
+export const storageProvider = pgEnum('storage_provider', ['supabase', 'r2']);
 export const memberStatus = pgEnum('member_status', ['pending', 'approved', 'rejected']);
 export const memberInterest = pgEnum('member_interest', ['trading', 'coding', 'sharing', 'other']);
 
@@ -29,6 +31,7 @@ export const videos = pgTable('videos', {
   title: text('title').notNull(),
   description: text('description').notNull().default(''),
   storagePath: text('storage_path').notNull(),
+  storageProvider: storageProvider('storage_provider').notNull().default('supabase'),
   thumbnailPath: text('thumbnail_path'),
   /** Speech-only audio (Opus webm) the browser extracts; transcribed instead of the video. */
   audioPath: text('audio_path'),
