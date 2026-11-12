@@ -1,11 +1,9 @@
-import { z } from 'zod';
 import { clearRating, setRating } from '@/lib/ratings';
+import { RatingBody } from '@/lib/request-schemas';
 import { checkCanReact } from '@/lib/video-access';
 import { isVideoId } from '@/lib/videos';
 
 type RouteContext = { params: Promise<{ id: string }> };
-
-const RatingBody = z.object({ stars: z.number().int().min(1).max(5) });
 
 /** Signed-in viewers: rate (or re-rate) a video they can watch, 1–5 stars. */
 export async function PUT(request: Request, { params }: RouteContext) {

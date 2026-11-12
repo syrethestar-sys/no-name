@@ -51,7 +51,8 @@ function matchesText(text: string) {
   return or(ilike(videos.title, pattern), ilike(videos.description, pattern));
 }
 
-const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
+/** Members-only video and the viewer isn't a member (the owner always counts as a member). */
+export const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
   visibility === 'members' && !viewerIsMember;
 
 /** Ready videos (optionally one topic), sorted, with like/rating totals and signed thumbnail URLs. */

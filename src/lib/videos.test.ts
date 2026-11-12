@@ -1,5 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { containsPattern, feedHref, isFeedSort, isVideoTopic } from '@/lib/videos';
+import { containsPattern, feedHref, isFeedSort, isLockedFor, isVideoTopic } from '@/lib/videos';
+
+describe('isLockedFor (members-only lock)', () => {
+  it('locks members-only videos for non-members', () => {
+    expect(isLockedFor('members', false)).toBe(true);
+  });
+
+  it('opens members-only videos for members (the owner counts as one)', () => {
+    expect(isLockedFor('members', true)).toBe(false);
+  });
+
+  it('never locks public videos', () => {
+    expect(isLockedFor('public', false)).toBe(false);
+    expect(isLockedFor('public', true)).toBe(false);
+  });
+});
 
 describe('feedHref', () => {
   it('leaves defaults out of the URL', () => {

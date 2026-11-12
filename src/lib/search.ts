@@ -1,5 +1,5 @@
 import 'server-only';
-import { searchDocuments } from '@/lib/pinecone';
+import { type DocumentMatch, searchDocuments } from '@/lib/pinecone';
 import { listReadyVideos, type VideoCardData } from '@/lib/videos';
 
 // multilingual-e5-large scores sit close together (measured 2026-11-12): the right video
@@ -19,6 +19,39 @@ function toSnippet(text: string): string {
   return text.length > SNIPPET_LENGTH ? `${text.slice(0, SNIPPET_LENGTH).trimEnd()}…` : text;
 }
 
+type BestMatch = { score: number; snippet: string | null };
+
+/** One match per video, keeping only matches near the top score. Expects best-first order. */
+export function pickBestMatches(matches: DocumentMatch[]): Map<string, BestMatch> {
+  const bestScore = matches[0]?.score ?? 0;
+  const bestByVideo = new Map<string, BestMatch>();
+  for (const match of matches) {
+    if (match.score < MIN_SCORE || match.score < bestScore - MAX_GAP_FROM_BEST) break;
+    if (bestByVideo.has(match.videoId)) continue;
+    // `#meta` is the title + description, which the card already shows.
+    const isTranscript = !match.id.endsWith('#meta');
+    bestByVideo.set(match.videoId, {
+      score: match.score,
+      snippet: isTranscript ? toSnippet(match.text) : null,
+    });
+  }
+  return bestByVideo;
+}
+
+/** Best score first; locked videos never show a snippet, so their transcripts never leak. */
+export function toSearchResults(
+  videos: VideoCardData[],
+  bestByVideo: Map<string, BestMatch>,
+): SearchResult[] {
+  const scoreOf = (video: VideoCardData) => bestByVideo.get(video.id)?.score ?? 0;
+  return [...videos]
+    .sort((first, second) => scoreOf(second) - scoreOf(first))
+    .map((video) => ({
+      ...video,
+      snippet: video.isLocked ? null : (bestByVideo.get(video.id)?.snippet ?? null),
+    }));
+}
+
 /** Search by meaning; falls back to a plain title/description match if Pinecone fails. */
 export async function searchVideos(query: string, viewerIsMember: boolean): Promise<SearchOutcome> {
   let matches;
@@ -30,29 +63,10 @@ export async function searchVideos(query: string, viewerIsMember: boolean): Prom
     return { results: results.map((video) => ({ ...video, snippet: null })), isFallback: true };
   }
 
-  const bestScore = matches[0]?.score ?? 0;
-  const bestByVideo = new Map<string, { score: number; snippet: string | null }>();
-  for (const match of matches) {
-    if (match.score < MIN_SCORE || match.score < bestScore - MAX_GAP_FROM_BEST) break;
-    if (bestByVideo.has(match.videoId)) continue; // matches come best first
-    // `#meta` is the title + description, which the card already shows.
-    const isTranscript = !match.id.endsWith('#meta');
-    bestByVideo.set(match.videoId, {
-      score: match.score,
-      snippet: isTranscript ? toSnippet(match.text) : null,
-    });
-  }
-
+  const bestByVideo = pickBestMatches(matches);
   // The DB decides what exists and is ready; documents of deleted videos simply drop out.
   const videos = await listReadyVideos({ viewerIsMember, ids: [...bestByVideo.keys()] });
-  const scoreOf = (video: VideoCardData) => bestByVideo.get(video.id)?.score ?? 0;
-  const results = videos
-    .sort((first, second) => scoreOf(second) - scoreOf(first))
-    .map((video) => ({
-      ...video,
-      snippet: video.isLocked ? null : (bestByVideo.get(video.id)?.snippet ?? null),
-    }));
-  return { results, isFallback: false };
+  return { results: toSearchResults(videos, bestByVideo), isFallback: false };
 }
 
 /** Other videos closest in meaning to this one (title, description, start of transcript). */
