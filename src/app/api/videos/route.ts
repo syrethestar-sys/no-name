@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { getAdminUserId } from '@/lib/auth';
-import { transcribeVideo } from '@/lib/transcribe';
+import { startTranscription } from '@/lib/transcribe';
 
 // Paths must be the ones /api/videos/upload-url handed out: a uuid in our folders.
 const uuidPattern = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
@@ -54,9 +54,9 @@ export async function POST(request: Request) {
         status: 'ready', // watchable now; the transcript follows in the background
       })
       .returning({ id: videos.id });
-    // Runs after the response is sent. Until n8n is set up this is the only trigger;
-    // the owner's "Transcribe" button retries failures.
-    after(() => transcribeVideo(video.id));
+    // Runs after the response is sent (via n8n when configured). The owner's
+    // "Transcribe" button retries failures.
+    after(() => startTranscription(video.id));
     return Response.json({ id: video.id }, { status: 201 });
   } catch (error) {
     console.error('save video failed', error);

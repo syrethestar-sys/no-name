@@ -75,3 +75,22 @@ export async function transcribeVideo(videoId: string): Promise<TranscribeOutcom
     return 'failed';
   }
 }
+
+/**
+ * Starts transcription in the background. With n8n configured, n8n runs it (and retries);
+ * otherwise, or if n8n can't be reached, it runs here. Call it inside `after()`.
+ */
+export async function startTranscription(videoId: string): Promise<void> {
+  const webhookUrl = process.env.N8N_WEBHOOK_URL;
+  const webhookSecret = process.env.N8N_WEBHOOK_SECRET;
+  if (webhookUrl && webhookSecret) {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-webhook-secret': webhookSecret },
+      body: JSON.stringify({ videoId }),
+    }).catch(() => null);
+    if (response?.ok) return;
+    console.error('n8n webhook failed, transcribing here', videoId, response?.status);
+  }
+  await transcribeVideo(videoId);
+}
