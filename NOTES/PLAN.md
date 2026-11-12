@@ -67,7 +67,7 @@ Counts and the star average are computed with SQL. They are not stored as extra 
 ## Language (Mongolian + English)
 
 - Whisper auto-detects the language. The detected language is saved in `videos.language`.
-- Embeddings use `paraphrase-multilingual-MiniLM-L12-v2`, which covers Mongolian and English. A search in English can find a Mongolian video and the other way round.
+- Embeddings use Pinecone's integrated `multilingual-e5-large` (see Phase 8 provider change), which covers Mongolian and English. A search in English can find a Mongolian video and the other way round.
 - UI text is English first. Mongolian UI translation is a possible later task.
 
 ## Open questions (not blocking until Phase 9)
@@ -284,3 +284,27 @@ What changes (looks only, no data or behavior changes):
 7. Search results and related videos use the same card, so they pick it up automatically.
 
 **PR:** one `refactor/getlayers-style` PR, under 300 lines. Before/after screenshots in the PR.
+
+## Deploy plan — put the site online (2026-11-13, owner: not yet)
+
+Why now: Phase 9a (Facebook post with a link) and n8n both need a public address. Today the site only runs on the owner's PC.
+
+**Where:** Vercel, Hobby plan (free), connected to the GitHub repo. Every merge to `main` deploys by itself, and every PR gets its own preview link. Address: `<name>.vercel.app` now, with a custom domain possible later.
+
+**What fits already, so no code changes:**
+- Video files go from the browser straight to Supabase with a signed URL. Vercel's 4.5 MB request limit never sees them.
+- Transcription runs in `after()` with `maxDuration = 300`. 300 s is allowed on the free plan.
+- All secrets come from environment variables. The owner pastes them into Vercel's dashboard, and I never see them.
+
+**Steps (owner clicks, I give exact instructions and check the result):**
+1. vercel.com → sign in with GitHub → Import `syrethestar-sys/no-name`, framework Next.js, no other settings.
+2. Settings → Environment Variables: copy every key from `.env.local` (Clerk, Supabase, Groq, Pinecone). Leave the n8n, Facebook and Wire keys empty for now.
+3. Deploy, then send me the URL. I check: feed, sign-in (email code + Google), upload of a short video, auto transcript, `/search`, members-only lock, comments.
+4. Clerk Dashboard → add the Vercel URL to allowed origins and redirect URLs (Google sign-in needs it).
+
+**Limits to know:**
+- **Clerk stays on its development instance.** It works on `vercel.app`, but shows a small "Development mode" badge. Its users are separate from a future production instance, so they would have to sign up again. A Clerk **production** instance needs a domain you own (~$10/year), plus your own Google sign-in keys. Recommended once the site goes public for real.
+- **Vercel Hobby is for non-commercial use.** It's fine until Phase 9b (Wire.mn payments). Before taking money, move to Pro ($20/month) or another host.
+- Nothing changes in Supabase, Groq or Pinecone. They're already cloud services.
+
+**My part:** a small docs PR (this plan + a "Deploy" section in the handoff note). If something breaks online but works locally, I fix it with a normal plan → PR.
