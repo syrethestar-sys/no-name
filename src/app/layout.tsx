@@ -18,13 +18,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider appearance={{ theme: dark, variables: { colorPrimary: '#5fd38d' } }}>
-      <html lang="en">
-        <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+    <html lang="en">
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+        <ClerkProvider appearance={{ theme: dark, variables: { colorPrimary: '#5fd38d' } }}>
           <SiteHeader />
           {children}
-        </body>
-      </html>
-    </ClerkProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
