@@ -111,7 +111,12 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
           >
             <span className="pt-1.5 font-mono text-xs text-primary">owner</span>
             <div className="flex flex-wrap items-start justify-end gap-2">
-              <TranscribeButton videoId={video.id} transcriptStatus={video.transcriptStatus} />
+              <TranscribeButton
+                videoId={video.id}
+                transcriptStatus={video.transcriptStatus}
+                videoUrl={video.playbackUrl}
+                hasAudio={video.audioPath !== null}
+              />
               <VisibilityToggle videoId={video.id} visibility={video.visibility} />
               <DeleteVideoButton videoId={video.id} />
             </div>
