@@ -1,5 +1,5 @@
 import 'server-only';
-import { and, avg, count, desc, eq, sql } from 'drizzle-orm';
+import { and, avg, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
 import { getDb } from '@/db';
 import { likes, ratings, videos } from '@/db/schema';
 import { SIGNED_URL_SECONDS, videoStorage } from '@/lib/supabase';
@@ -40,6 +40,12 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const isUuid = (value: string) => UUID.test(value);
 export const isVideoId = isUuid;
 
+/** `ilike` with the user's text escaped, so `%` and `_` match literally. */
+function matchesText(text: string) {
+  const pattern = `%${text.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+  return or(ilike(videos.title, pattern), ilike(videos.description, pattern));
+}
+
 const isLockedFor = (visibility: Video['visibility'], viewerIsMember: boolean) =>
   visibility === 'members' && !viewerIsMember;
 
@@ -49,8 +55,13 @@ export async function listReadyVideos(options: {
   topic?: VideoTopic;
   sort?: FeedSort;
   limit?: number;
+  /** Only these videos (search results). The caller re-orders them. */
+  ids?: string[];
+  /** Plain title/description match: search's fallback when Pinecone is down. */
+  textMatch?: string;
 }): Promise<VideoCardData[]> {
-  const { viewerIsMember, topic, sort = 'newest', limit = 60 } = options;
+  const { viewerIsMember, topic, sort = 'newest', limit = 60, ids, textMatch } = options;
+  if (ids?.length === 0) return [];
   const db = getDb();
   // Totals are computed per query, never stored. Each table is totalled in its own subquery:
   // joining likes and ratings directly would multiply rows and inflate both counts.
@@ -99,7 +110,14 @@ export async function listReadyVideos(options: {
     .from(videos)
     .leftJoin(likeTotals, eq(likeTotals.videoId, videos.id))
     .leftJoin(ratingTotals, eq(ratingTotals.videoId, videos.id))
-    .where(and(eq(videos.status, 'ready'), topic ? eq(videos.topic, topic) : undefined))
+    .where(
+      and(
+        eq(videos.status, 'ready'),
+        topic ? eq(videos.topic, topic) : undefined,
+        ids ? inArray(videos.id, ids) : undefined,
+        textMatch ? matchesText(textMatch) : undefined,
+      ),
+    )
     .orderBy(...sortOrder)
     .limit(limit);
 
