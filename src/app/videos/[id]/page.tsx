@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { CommentsSection } from '@/components/comments-section';
 import { DeleteVideoButton } from '@/components/delete-video-button';
 import { LikeButton, type ReactionBlocker } from '@/components/like-button';
 import { LockedVideo } from '@/components/locked-video';
+import { RelatedVideos } from '@/components/related-videos';
+import { TranscriptPanel } from '@/components/transcript-panel';
 import { TranscribeButton } from '@/components/transcribe-button';
 import { VisibilityToggle } from '@/components/visibility-toggle';
 import { getViewer } from '@/lib/auth';
@@ -104,6 +107,16 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
           {video.description}
         </p>
       )}
+
+      {/* A silent video transcribes to "." — not worth a panel. */}
+      {!video.isLocked && video.transcript && video.transcript.split(/\s+/).length >= 5 && (
+        <TranscriptPanel transcript={video.transcript} />
+      )}
+
+      {/* Pinecone can be slow; don't hold the rest of the page for it. */}
+      <Suspense fallback={null}>
+        <RelatedVideos video={video} viewerIsMember={viewer.isMember} />
+      </Suspense>
 
       {!video.isLocked && (
         <CommentsSection videoId={video.id} viewer={viewer} limit={commentLimitFrom(comments)} />

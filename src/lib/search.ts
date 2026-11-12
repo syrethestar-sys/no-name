@@ -54,3 +54,24 @@ export async function searchVideos(query: string, viewerIsMember: boolean): Prom
     }));
   return { results, isFallback: false };
 }
+
+/** Other videos closest in meaning to this one (title, description, start of transcript). */
+export async function findRelatedVideos(
+  video: Pick<VideoCardData, 'id' | 'title'> & { description: string; transcript: string | null },
+  viewerIsMember: boolean,
+  count = 4,
+): Promise<VideoCardData[]> {
+  const transcriptStart = (video.transcript ?? '').split(/\s+/).slice(0, 120).join(' ');
+  const queryText = [video.title, video.description, transcriptStart].filter(Boolean).join('\n');
+  const matches = await searchDocuments(queryText, 20);
+
+  const relatedIds: string[] = [];
+  for (const match of matches) {
+    if (match.videoId === video.id || relatedIds.includes(match.videoId)) continue;
+    relatedIds.push(match.videoId);
+  }
+  const videos = await listReadyVideos({ viewerIsMember, ids: relatedIds });
+  return videos
+    .sort((first, second) => relatedIds.indexOf(first.id) - relatedIds.indexOf(second.id))
+    .slice(0, count);
+}
