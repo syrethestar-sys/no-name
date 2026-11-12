@@ -210,3 +210,62 @@ The `comments` table already exists (`parent_id` for replies, text CHECKed 1–2
 **Owner answers (2026-11-12):** deleting a top-level comment removes its replies too; 5 comments per minute per person is OK.
 
 **PRs:** (1) `feat/comments` — `src/lib/comments.ts` + the two API routes; (2) `feat/comments-ui` — the components and the video page.
+
+## Phase 8 plan — Transcripts + search by meaning (2026-11-12, approved)
+
+Goal: `/search?q=` finds a video by what is *said* in it, in Mongolian or English, and each video page shows "Related videos". Videos stay watchable right after upload; the transcript arrives later in the background.
+
+**Data (one migration)**
+- `videos.transcript_status`: `pending` / `done` / `failed` (default `pending`). `videos.language` and `videos.transcript` already exist and get filled in.
+- Nothing else is stored in Postgres. Vectors live in Pinecone.
+
+**Background job** (logic lives in our code; n8n only triggers and retries it)
+1. After `POST /api/videos` saves a row, the server calls the n8n webhook with `{ videoId }` and the secret header. If n8n is down, the upload still succeeds and the video stays `pending`.
+2. n8n calls our `POST /api/jobs/transcribe` with `x-webhook-secret` (checked with a constant-time compare, zod body). It retries 3 times with a delay. The workflow JSON is committed in `n8n/transcribe.json` so it can be imported.
+3. The route:
+   - downloads the file through a signed URL;
+   - sends it to Hugging Face `openai/whisper-large-v3`, which returns text and the detected language;
+   - saves `transcript`, `language` and `transcript_status = done`;
+   - indexes the video in Pinecone.
+
+   On error it saves `failed` with no raw error shown.
+- Indexing: one vector for title + description (`{videoId}#meta`), plus one per ~100-word transcript chunk (`{videoId}#0`, `#1`, …), because MiniLM only reads ~128 tokens. Embeddings come from HF `paraphrase-multilingual-MiniLM-L12-v2`, 384 dims. Metadata holds `{ videoId, chunk text }`.
+- Owner tools on the video page: the transcript status and a "Transcribe" / "Try again" button. It runs the same job directly, so it works for videos uploaded before Phase 8 and when n8n isn't set up.
+- Deleting a video also deletes its vectors (by ID prefix). Editing a title re-indexes `#meta`.
+
+**Search** (`/search?q=`, the header already links to it)
+- Embed the query → Pinecone top 30 → keep the best score per video → load those videos from the DB (ready only). Results use the same card grid, and the same lock rules apply.
+- A result shows the matching transcript snippet ("…we drove to Khövsgöl and it snowed…"). **Members-only videos never show a snippet to non-members**, only the locked card, so their transcripts don't leak.
+- If Pinecone or HF is down, or keys are missing, it falls back to a simple title/description text match and says "Showing simple matches."
+- Empty query → a short hint. No results → "Nothing found. Try other words."
+
+**Related videos**
+- Video page: query Pinecone with the video's `#meta` vector → 4 other videos as small cards, skipping itself. Hidden if Pinecone isn't reachable.
+
+**Transcript on the page**
+- A collapsed "Transcript" section under the description, for people who can watch the video.
+
+**Files:** `src/lib/hf.ts` (whisper + embeddings), `src/lib/pinecone.ts` (upsert/query/delete), `src/lib/transcribe.ts` (the job), `src/app/api/jobs/transcribe/route.ts`, `src/app/search/page.tsx`, `RelatedVideos`, `TranscriptPanel`, `TranscribeButton`. New package: `@pinecone-database/pinecone` (official SDK). HF is called with plain `fetch`.
+
+**PRs:** (1) migration + hf/pinecone/transcribe libs + job route + owner button + n8n workflow; (2) `/search`; (3) related videos + transcript panel. Each under 300 lines.
+
+**Owner setup needed** (I'll give click-by-click steps; I never see the values):
+1. Hugging Face: a token with "Inference Providers" permission → `HF_TOKEN`.
+2. Pinecone (free tier): an index named `videos`, **384 dimensions, cosine**, serverless → `PINECONE_API_KEY`, `PINECONE_INDEX=videos`.
+3. n8n: an instance (n8n Cloud or self-hosted), import `n8n/transcribe.json` → `N8N_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET` (any long random string, the same in both places). A deployed site URL is needed for n8n to call back; locally the owner button covers it.
+
+**Risks, checked first with the existing test video before building the rest**
+- Hugging Face's hosted whisper may not accept `.mp4` directly, or may cut off long files. If it fails, plan B: the browser extracts the audio track at upload time (smaller file, no server ffmpeg). I'll report before switching.
+- HF free credits are small. Whisper on a few short videos is fine; many long videos may need a paid HF plan.
+- Vercel function time limit (300 s) caps a single job at roughly 20–30 min of video, depending on HF speed.
+
+**Done when:** an uploaded video gets a transcript and language automatically (or via the owner button); `/search` finds it with words from the speech in English and in Mongolian; a members-only result shows no snippet to a non-member; related videos appear; deleting a video removes its vectors.
+
+**Owner answers (2026-11-12):** no n8n yet, so the upload route starts the job directly (Next.js `after()`) and the owner button retries; n8n is added later as the retry layer (the job route and workflow file still get built). Show the transcript on the video page, collapsed.
+
+**Provider change (2026-11-12, owner wants free only; the owner set up Groq + Pinecone).** This replaces the Hugging Face parts above:
+- Speech → text: **Groq** `whisper-large-v3` (free plan: ~2 h of audio per hour, **25 MB per file**). Tested: it accepts `.mp4` directly and returns the detected language. Files over 25 MB are marked `failed` ("too big for free transcription") for now; extracting the audio in the browser (plan B) comes later if needed.
+- Embeddings: **Pinecone integrated embedding** `multilingual-e5-large` (1024 dims, free on Starter). Pinecone embeds the text itself, so there's no embedding model in our code. Tested: Mongolian queries find English text and the other way round.
+- The index has a document schema (one field, `chunk_text`), so it uses Pinecone's **documents API** (`/namespaces/{ns}/documents/upsert|search|fetch|list|delete`, header `X-Pinecone-API-Version: 2026-07`) through plain `fetch`. The SDK isn't needed.
+- Chunks: ~200 words (e5 reads up to 512 tokens). Scores sit close together (0.70–0.88), so search drops matches well below the best one.
+- Env: `GROQ_API_KEY`, `PINECONE_API_KEY`, `PINECONE_INDEX`. `HF_TOKEN` isn't used.

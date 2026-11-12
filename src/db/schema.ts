@@ -20,6 +20,7 @@ export const videoStatus = pgEnum('video_status', ['processing', 'ready', 'faile
 export const videoLanguage = pgEnum('video_language', ['mn', 'en']);
 export const videoVisibility = pgEnum('video_visibility', ['public', 'members']);
 export const videoTopic = pgEnum('video_topic', ['trading', 'coding', 'life']);
+export const transcriptStatus = pgEnum('transcript_status', ['pending', 'done', 'failed']);
 export const memberStatus = pgEnum('member_status', ['pending', 'approved', 'rejected']);
 export const memberInterest = pgEnum('member_interest', ['trading', 'coding', 'sharing', 'other']);
 
@@ -33,8 +34,10 @@ export const videos = pgTable('videos', {
   // Members-only by default: the owner opts a video into being a public teaser.
   visibility: videoVisibility('visibility').notNull().default('members'),
   topic: videoTopic('topic').notNull().default('life'),
-  language: videoLanguage('language'), // set by whisper in Phase 8
+  language: videoLanguage('language'), // detected by whisper (Phase 8); null for other languages
   transcript: text('transcript'),
+  // Transcribing runs after upload; the video is watchable meanwhile.
+  transcriptStatus: transcriptStatus('transcript_status').notNull().default('pending'),
   status: videoStatus('status').notNull().default('processing'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 }).enableRLS();

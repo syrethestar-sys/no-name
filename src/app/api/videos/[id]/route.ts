@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getDb } from '@/db';
 import { videos } from '@/db/schema';
 import { getAdminUserId } from '@/lib/auth';
+import { deleteVideoDocuments } from '@/lib/pinecone';
 import { videoStorage } from '@/lib/supabase';
 import { isVideoId } from '@/lib/videos';
 
@@ -61,6 +62,10 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     // The row is already gone, so a failed file delete only leaves an orphan file. Log it, don't fail.
     const { error } = await videoStorage().remove(paths);
     if (error) console.error('storage cleanup failed', paths, error);
+    // Same for search: an orphan document is filtered out later (its video row is gone).
+    await deleteVideoDocuments(id).catch((searchError: unknown) =>
+      console.error('search cleanup failed', id, searchError),
+    );
 
     return new Response(null, { status: 204 });
   } catch (error) {
