@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { MemberReviewButtons } from '@/components/member-review-buttons';
+import { PageHeading } from '@/components/page-heading';
 import { isAdmin } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 import { listMembersForReview, type MemberWithProfile } from '@/lib/members';
@@ -9,7 +10,7 @@ export const metadata = { title: 'Members · Experience Community' };
 
 function MemberRow({ member, mode }: { member: MemberWithProfile; mode: 'pending' | 'approved' }) {
   return (
-    <li className="flex flex-wrap items-start justify-between gap-4 rounded-xl border bg-card p-4">
+    <li className="flex flex-wrap items-start justify-between gap-4 glass-panel p-4">
       <div className="flex min-w-0 flex-1 gap-3">
         {member.imageUrl ? (
           <Image
@@ -60,7 +61,7 @@ export default async function AdminMembersPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
+      <PageHeading title="Members" eyebrow="owner" size="small" />
 
       <h2 className="mt-8 font-medium">Waiting for review ({pending.length})</h2>
       {pending.length === 0 ? (

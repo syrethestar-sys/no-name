@@ -308,3 +308,24 @@ Why now: Phase 9a (Facebook post with a link) and n8n both need a public address
 - Nothing changes in Supabase, Groq or Pinecone. They're already cloud services.
 
 **My part:** a small docs PR (this plan + a "Deploy" section in the handoff note). If something breaks online but works locally, I fix it with a normal plan → PR.
+
+## Restyle plan, part 2 — the other pages (2026-11-13, approved)
+
+Same look as the new feed. Looks only: no data, routes or behavior change.
+
+**Shared pieces**
+- `PageHeading` component: a mono eyebrow line, a large light-weight gradient title and a quiet subline, the same as the feed's "Experiences". The feed switches to it too.
+- `glass-panel` utility in `globals.css`: rounded, `--glass` background, a faint top edge and no border. It replaces the bordered `bg-card` boxes (upload form, join, sign-in, member requests, transcript, owner tools).
+
+**PR 1: search, upload, join, sign-in, members**
+- Search: page width and grid match the feed (up to 4 columns). The search box becomes a large rounded glass field with a search icon and the button inside it. The matching sentence sits in a quiet quote under each card.
+- Upload, join, sign-in, members: `PageHeading` plus glass panels. Member request rows become glass rows.
+
+**PR 2: video page**
+- Wider page with two columns on large screens. On the left: player, title, info and reactions, description, transcript, comments. On the right: "Related videos" as a column of cards. On phones the columns stack, the same as now.
+- Player: rounded, no border, with a faint mint glow behind it.
+- Title in the new light heading style. Topic, visibility, date and length become small mono chips.
+- Owner tools (visibility, transcribe, delete) are grouped in one glass panel labelled "Owner".
+- The locked-video teaser gets the same rounded, borderless look.
+
+Each PR stays under 300 lines. Checked at desktop and phone width before merging.

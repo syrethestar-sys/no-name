@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
 import { SortChips } from '@/components/sort-chips';
 import { TopicChips } from '@/components/topic-chips';
+import { PageHeading } from '@/components/page-heading';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
@@ -44,18 +45,17 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
-      <div>
-        <p className="font-mono text-xs text-muted-foreground">
-          {topicCounts && `${topicCounts.all} ${topicCounts.all === 1 ? 'video' : 'videos'} · `}
-          trading, coding, life
-        </p>
-        <h1 className="mt-2 bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text pb-1 text-4xl font-light tracking-tight text-transparent sm:text-5xl">
-          Experiences
-        </h1>
-        <p className="mt-2 text-muted-foreground">
-          Work, life, trading and code — shared with people who grow together.
-        </p>
-      </div>
+      <PageHeading
+        title="Experiences"
+        eyebrow={
+          <>
+            {topicCounts && `${topicCounts.all} ${topicCounts.all === 1 ? 'video' : 'videos'} · `}
+            trading, coding, life
+          </>
+        }
+      >
+        Work, life, trading and code — shared with people who grow together.
+      </PageHeading>
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
         <TopicChips activeTopic={topic} sort={sort} counts={topicCounts} />
         <SortChips activeSort={sort} topic={topic} />

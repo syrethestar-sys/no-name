@@ -33,7 +33,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
 
   return (
     <main className="mx-auto flex max-w-sm flex-col px-4 py-16">
-      <div className="rounded-xl border bg-card p-6">
+      <div className="glass-panel p-6">
         <AuthForm returnTo={returnTo} resumeSignUp={isFinishingSignUp} />
       </div>
     </main>

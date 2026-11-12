@@ -69,6 +69,13 @@
   --radius-xl: calc(var(--radius) * 1.4);
 }
 
+/* Borderless glass box (forms, notices, panels). Cards use bg-glass directly. */
+@utility glass-panel {
+  border-radius: var(--radius-xl);
+  background-color: var(--glass);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
