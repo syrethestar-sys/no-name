@@ -7,14 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { VideoOptionsFields } from '@/components/video-options-fields';
+import { formatFileSize } from '@/lib/format';
 import { makeSpeechAudio } from '@/lib/speech-audio';
 import { readVideoDetails, uploadToSignedUrl } from '@/lib/video-file';
 import type { VideoTopic, VideoVisibility } from '@/types/db';
 
-const MAX_BYTES = 50_000_000; // same as the bucket limit
 const ACCEPTED_TYPES = ['video/mp4', 'video/webm', 'video/quicktime'];
 
 type UploadUrls = {
+  storageProvider: 'supabase' | 'r2';
   videoPath: string;
   videoUploadUrl: string;
   thumbnailPath: string;
@@ -45,7 +46,8 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
-export function UploadForm() {
+/** `maxBytes`: 2 GB when videos go to R2, 50 MB on Supabase (the page decides). */
+export function UploadForm({ maxBytes }: { maxBytes: number }) {
   const router = useRouter();
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
@@ -62,7 +64,9 @@ export function UploadForm() {
     if (!file) return setVideoFile(null);
     if (!ACCEPTED_TYPES.includes(file.type))
       return setErrorMessage('Use an mp4, webm or mov file.');
-    if (file.size > MAX_BYTES) return setErrorMessage('This file is over 50 MB.');
+    if (file.size > maxBytes) {
+      return setErrorMessage(`This file is over ${formatFileSize(maxBytes)}.`);
+    }
     setVideoFile(file);
     if (!title) setTitle(file.name.replace(/\.[^.]+$/, ''));
   }
@@ -91,6 +95,7 @@ export function UploadForm() {
         title,
         description,
         videoPath: urls.videoPath,
+        storageProvider: urls.storageProvider,
         thumbnailPath: details.thumbnail ? urls.thumbnailPath : null,
         audioPath,
         durationSeconds: details.durationSeconds,
@@ -108,7 +113,9 @@ export function UploadForm() {
   return (
     <form onSubmit={submitUpload} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="video-file">Video (mp4, webm or mov, up to 50 MB)</Label>
+        <Label htmlFor="video-file">
+          Video (mp4, webm or mov, up to {formatFileSize(maxBytes)})
+        </Label>
         <Input
           id="video-file"
           type="file"

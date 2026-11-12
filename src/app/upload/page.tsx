@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { PageHeading } from '@/components/page-heading';
 import { UploadForm } from '@/components/upload-form';
 import { isAdmin } from '@/lib/auth';
+import { uploadTarget } from '@/lib/stored-video';
 
 export const metadata = { title: 'Upload · Experience Community' };
 
@@ -14,7 +15,7 @@ export default async function UploadPage() {
         The file goes straight to storage. A thumbnail is taken from the first second.
       </PageHeading>
       <div className="glass-panel mt-8 p-6">
-        <UploadForm />
+        <UploadForm maxBytes={uploadTarget().maxBytes} />
       </div>
     </main>
   );
