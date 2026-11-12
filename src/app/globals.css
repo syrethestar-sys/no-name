@@ -10,7 +10,7 @@
  *   muted-foreground  quiet text      destructive  delete / errors
  *   glass       borderless card tint (getlayers-style), glass-hover on hover
  *   glass-edge  faint top highlight on chips   thumb  empty thumbnail
- *   rec         the viewfinder's recording dot
+ *   rec         the viewfinder's recording dot   crt-body  the TV cases on the feed's wall
  * Look: a camcorder viewfinder (see NOTES/PLAN.md, "Viewfinder redesign").
  */
 :root {
@@ -38,6 +38,7 @@
   --glass-edge: rgba(255, 255, 255, 0.06);
   --thumb: #111516;
   --rec: #ff4d4d;
+  --crt-body: #0b0e0f;
 }
 
 @theme inline {
@@ -68,6 +69,7 @@
   --color-glass-edge: var(--glass-edge);
   --color-thumb: var(--thumb);
   --color-rec: var(--rec);
+  --color-crt-body: var(--crt-body);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -138,6 +140,95 @@
   background-image: linear-gradient(180deg, var(--foreground) 20%, var(--primary) 100%);
   background-clip: text;
   color: transparent;
+}
+
+/* ---- The feed's TV wall (TvWallHero / CrtTv) ---- */
+
+/* Film grain: SVG noise, reused by the static screens. */
+@utility film-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* A TV showing snow. */
+@utility crt-static {
+  background-color: #8a8f8f;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+  filter: contrast(2.4) brightness(0.95);
+  animation: crt-snow 0.35s steps(4) infinite;
+}
+
+/* Colour bars, the test card every TV knows. */
+@utility crt-bars {
+  background: linear-gradient(
+    90deg,
+    #d8d8d8 0 14.3%,
+    #e6dc5a 0 28.6%,
+    #5fd7d7 0 42.9%,
+    #63d26e 0 57.1%,
+    #d25fcf 0 71.4%,
+    #d9615c 0 85.7%,
+    #5b62d6 0
+  );
+}
+
+/* The TV case and its curved, glowing screen. */
+@utility crt-case {
+  border-radius: 10% / 13%;
+  background-color: var(--crt-body);
+  padding: 6%;
+  box-shadow:
+    0 24px 48px -12px rgb(0 0 0 / 0.9),
+    inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+@utility crt-screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12% / 16%;
+  box-shadow: 0 0 36px -6px rgb(255 255 255 / 0.35);
+}
+
+/* Curved glass: light on the top-left, dark toward the edges. */
+@utility crt-glass {
+  background: radial-gradient(
+    120% 90% at 30% 20%,
+    rgb(255 255 255 / 0.18),
+    transparent 45%,
+    rgb(0 0 0 / 0.45) 100%
+  );
+}
+
+/* A screen glowing with the accent colour. */
+@utility crt-glow {
+  background: radial-gradient(
+    circle at 40% 40%,
+    var(--foreground),
+    var(--primary) 45%,
+    var(--crt-body) 100%
+  );
+}
+
+/* Horizontal scanlines laid over a screen. */
+@utility scanlines {
+  background: repeating-linear-gradient(180deg, rgb(0 0 0 / 0.28) 0 1px, transparent 1px 3px);
+}
+
+@keyframes crt-snow {
+  to {
+    background-position: 160px 80px;
+  }
+}
+
+/* Rack focus: point at one TV and the rest of the wall falls out of focus. */
+.tv-wall:has(.crt-tv:hover) .crt-tv:not(:hover) {
+  filter: blur(calc(var(--blur, 0px) + 2.5px)) brightness(0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-static {
+    animation: none;
+  }
 }
 
 @layer base {

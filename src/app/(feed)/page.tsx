@@ -4,6 +4,7 @@ import { SortChips } from '@/components/sort-chips';
 import { TopicChips } from '@/components/topic-chips';
 import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
+import { TvWallHero } from '@/components/tv-wall-hero';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
@@ -28,9 +29,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   let topicCounts: TopicCounts | null = null;
   let loadFailed = false;
   let isOwner = false;
+  let showJoin = false;
   try {
     const viewer = await getViewer();
     isOwner = viewer.isOwner;
+    showJoin = !viewer.isMember && viewer.memberStatus !== 'pending';
     [videos, topicCounts] = await Promise.all([
       listReadyVideos({ viewerIsMember: viewer.isMember, topic: topic ?? undefined, sort }),
       // Counts are extras: the feed still shows if they fail.
@@ -47,21 +50,33 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   // The first video (newest, or most liked/rated) is shown big; the rest go in the grid.
   const [featuredVideo, ...gridVideos] = videos;
+  const eyebrow = (
+    <>
+      {topicCounts && `${topicCounts.all} ${topicCounts.all === 1 ? 'video' : 'videos'} · `}
+      trading, coding, life
+    </>
+  );
+  // The full-screen TV wall opens the plain home page; filtered views stay compact.
+  const isFrontPage = topic === null && sort === 'newest';
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
-      <PageHeading
-        title="Experiences"
-        eyebrow={
-          <>
-            {topicCounts && `${topicCounts.all} ${topicCounts.all === 1 ? 'video' : 'videos'} · `}
-            trading, coding, life
-          </>
-        }
+      {isFrontPage ? (
+        <TvWallHero
+          videos={videos}
+          eyebrow={eyebrow}
+          watchHref={featuredVideo ? `/videos/${featuredVideo.id}` : '#videos'}
+          showJoin={showJoin}
+        />
+      ) : (
+        <PageHeading title="Experiences" eyebrow={eyebrow}>
+          Work, life, trading and code — shared with people who grow together.
+        </PageHeading>
+      )}
+      <div
+        id="videos"
+        className="mt-8 flex scroll-mt-24 flex-wrap items-center justify-between gap-3 border-b pb-3"
       >
-        Work, life, trading and code — shared with people who grow together.
-      </PageHeading>
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
         <TopicChips activeTopic={topic} sort={sort} counts={topicCounts} />
         <SortChips activeSort={sort} topic={topic} />
       </div>
