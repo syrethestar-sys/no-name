@@ -4,6 +4,7 @@ import { CommentsSection } from '@/components/comments-section';
 import { DeleteVideoButton } from '@/components/delete-video-button';
 import { LikeButton, type ReactionBlocker } from '@/components/like-button';
 import { LockedVideo } from '@/components/locked-video';
+import { TranscribeButton } from '@/components/transcribe-button';
 import { VisibilityToggle } from '@/components/visibility-toggle';
 import { getViewer } from '@/lib/auth';
 import { formatDate, formatDuration } from '@/lib/format';
@@ -88,9 +89,12 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
           </div>
         </div>
         {viewer.isOwner && (
-          <div className="flex items-start gap-2">
-            <VisibilityToggle videoId={video.id} visibility={video.visibility} />
-            <DeleteVideoButton videoId={video.id} />
+          <div className="flex flex-col items-end gap-3">
+            <div className="flex items-start gap-2">
+              <VisibilityToggle videoId={video.id} visibility={video.visibility} />
+              <DeleteVideoButton videoId={video.id} />
+            </div>
+            <TranscribeButton videoId={video.id} transcriptStatus={video.transcriptStatus} />
           </div>
         )}
       </div>

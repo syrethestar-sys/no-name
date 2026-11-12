@@ -9,6 +9,8 @@ import type { Video } from '@/types/db';
 
 // multilingual-e5-large reads up to 512 tokens; ~200 words stays well inside that.
 const WORDS_PER_CHUNK = 200;
+// Near-empty text (a silent video transcribes to ".") scores high against every query.
+const MIN_CHUNK_WORDS = 5;
 
 /** `{id}#meta` = title + description; `{id}#0…` = transcript chunks. */
 export function buildDocuments(
@@ -23,10 +25,12 @@ export function buildDocuments(
   ];
   const words = (video.transcript ?? '').split(/\s+/).filter(Boolean);
   for (let start = 0; start < words.length; start += WORDS_PER_CHUNK) {
+    const chunkWords = words.slice(start, start + WORDS_PER_CHUNK);
+    if (chunkWords.length < MIN_CHUNK_WORDS) continue;
     documents.push({
       id: `${video.id}#${start / WORDS_PER_CHUNK}`,
       videoId: video.id,
-      text: words.slice(start, start + WORDS_PER_CHUNK).join(' '),
+      text: chunkWords.join(' '),
     });
   }
   return documents;
