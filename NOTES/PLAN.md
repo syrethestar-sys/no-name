@@ -269,3 +269,18 @@ Goal: `/search?q=` finds a video by what is *said* in it, in Mongolian or Englis
 - The index has a document schema (one field, `chunk_text`), so it uses Pinecone's **documents API** (`/namespaces/{ns}/documents/upsert|search|fetch|list|delete`, header `X-Pinecone-API-Version: 2026-07`) through plain `fetch`. The SDK isn't needed.
 - Chunks: ~200 words (e5 reads up to 512 tokens). Scores sit close together (0.70–0.88), so search drops matches well below the best one.
 - Env: `GROQ_API_KEY`, `PINECONE_API_KEY`, `PINECONE_INDEX`. `HF_TOKEN` isn't used.
+
+## Restyle plan — feed looks like getlayers.ai (2026-11-13, approved)
+
+Measured on getlayers.ai/templates (computed styles): page `#060606`, text `#f5f5f5`, quiet text `#a6a6a6`. Cards have **no border**: a 12px-rounded glass card (`rgba(255,255,255,0.04)`, brighter on hover) with ~5px inset, the thumbnail rounded 9px inside it on `#141414`. Below the thumbnail: ↗ arrow + small title + a "Free" badge on one row, a quiet sub-line under it. Filter chips are small (12px), `rgba(255,255,255,0.05)`, 10px radius, with a faint top highlight. The tabs are plain text that brightens when active. The heading is large, light weight (300) with a gradient, and has an eyebrow line ("62 templates · new layers weekly"). The grid is dense: 5 columns, ~4px gaps.
+
+What changes (looks only, no data or behavior changes):
+1. **Tokens** (`globals.css`): darker background (`#08090b`), new `--glass` / `--glass-hover` card tints and `--thumb` color. Mint stays the one accent. Fonts stay Inter + mono (CLAUDE.md).
+2. **Video card**: borderless glass card with an inset thumbnail; on hover the card brightens, lifts 2px and gets a thin mint glow edge (CSS only). Under the thumbnail: ↗ + title + a small badge (`Public` mint / `Members` grey), then a sub-line `Coding · Nov 12` with ★ 4.5 ♥ 3 in mono on the right. Duration stays on the thumbnail; the lock overlay stays.
+3. **Feed heading**: an eyebrow line `3 videos · trading, coding, life`, then a big light-weight gradient "Experiences" (white → grey), then the subline.
+4. **Filters**: topics become a tab row (All, Trading, Coding, Life, with counts like getlayers); sort becomes small glass chips. Counts come from one small grouped query.
+5. **Grid**: 2 columns → 3 → 4 on wide screens, tighter gaps (12px).
+6. **Header**: thinner and sticky, with a slightly see-through background.
+7. Search results and related videos use the same card, so they pick it up automatically.
+
+**PR:** one `refactor/getlayers-style` PR, under 300 lines. Before/after screenshots in the PR.

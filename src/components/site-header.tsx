@@ -27,8 +27,8 @@ export async function SiteHeader() {
   const showJoin = viewer !== null && !viewer.isMember && viewer.memberStatus !== 'pending';
 
   return (
-    <header className="border-b">
-      <nav className="mx-auto flex h-14 max-w-6xl items-center gap-5 px-4">
+    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
+      <nav className="mx-auto flex h-12 max-w-7xl items-center gap-5 px-4">
         <Link href="/" className="font-semibold tracking-tight">
           Experience<span className="text-primary">.</span>
         </Link>

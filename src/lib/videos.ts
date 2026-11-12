@@ -140,6 +140,24 @@ export async function listReadyVideos(options: {
   }));
 }
 
+export type TopicCounts = Record<VideoTopic | 'all', number>;
+
+/** Ready videos per topic for the feed tabs. Locked videos count: they show as teasers. */
+export async function countReadyVideosByTopic(): Promise<TopicCounts> {
+  const rows = await getDb()
+    .select({ topic: videos.topic, videoCount: count() })
+    .from(videos)
+    .where(eq(videos.status, 'ready'))
+    .groupBy(videos.topic);
+
+  const counts: TopicCounts = { all: 0, trading: 0, coding: 0, life: 0 };
+  for (const row of rows) {
+    counts[row.topic] = row.videoCount;
+    counts.all += row.videoCount;
+  }
+  return counts;
+}
+
 export type VideoForPage = Video & {
   /** null when locked: the page must not render a player. */
   playbackUrl: string | null;

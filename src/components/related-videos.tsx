@@ -20,7 +20,7 @@ export async function RelatedVideos({
       <h2 id="related-heading" className="text-lg font-semibold">
         Related videos
       </h2>
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {related.map((relatedVideo) => (
           <VideoCard key={relatedVideo.id} video={relatedVideo} />
         ))}

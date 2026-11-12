@@ -5,7 +5,14 @@ import { TopicChips } from '@/components/topic-chips';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
-import { isFeedSort, isVideoTopic, listReadyVideos, type VideoCardData } from '@/lib/videos';
+import {
+  countReadyVideosByTopic,
+  isFeedSort,
+  isVideoTopic,
+  listReadyVideos,
+  type TopicCounts,
+  type VideoCardData,
+} from '@/lib/videos';
 
 type HomePageProps = { searchParams: Promise<{ topic?: string; sort?: string }> };
 
@@ -15,16 +22,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const sort = isFeedSort(sortParam) ? sortParam : 'newest';
 
   let videos: VideoCardData[] = [];
+  let topicCounts: TopicCounts | null = null;
   let loadFailed = false;
   let isOwner = false;
   try {
     const viewer = await getViewer();
     isOwner = viewer.isOwner;
-    videos = await listReadyVideos({
-      viewerIsMember: viewer.isMember,
-      topic: topic ?? undefined,
-      sort,
-    });
+    [videos, topicCounts] = await Promise.all([
+      listReadyVideos({ viewerIsMember: viewer.isMember, topic: topic ?? undefined, sort }),
+      // Counts are extras: the feed still shows if they fail.
+      countReadyVideosByTopic().catch((error: unknown) => {
+        console.error('topic counts failed', error);
+        return null;
+      }),
+    ]);
   } catch (error) {
     unstable_rethrow(error); // let Next's own signals (dynamic rendering, redirects) through
     console.error('feed failed', error);
@@ -32,18 +43,22 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   }
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight">Experiences</h1>
-          <p className="mt-1 text-muted-foreground">
-            Work, life, trading and code — shared with people who grow together.
-          </p>
-        </div>
-        <div className="flex flex-col items-end gap-2">
-          <TopicChips activeTopic={topic} sort={sort} />
-          <SortChips activeSort={sort} topic={topic} />
-        </div>
+    <main className="mx-auto max-w-7xl px-4 py-12">
+      <div>
+        <p className="font-mono text-xs text-muted-foreground">
+          {topicCounts && `${topicCounts.all} ${topicCounts.all === 1 ? 'video' : 'videos'} · `}
+          trading, coding, life
+        </p>
+        <h1 className="mt-2 bg-gradient-to-b from-foreground to-muted-foreground bg-clip-text pb-1 text-4xl font-light tracking-tight text-transparent sm:text-5xl">
+          Experiences
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          Work, life, trading and code — shared with people who grow together.
+        </p>
+      </div>
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
+        <TopicChips activeTopic={topic} sort={sort} counts={topicCounts} />
+        <SortChips activeSort={sort} topic={topic} />
       </div>
 
       {loadFailed && (
@@ -63,7 +78,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         </div>
       )}
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {videos.map((video) => (
           <VideoCard key={video.id} video={video} />
         ))}
