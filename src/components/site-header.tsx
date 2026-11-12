@@ -3,10 +3,11 @@ import { unstable_rethrow } from 'next/navigation';
 import { Show } from '@clerk/nextjs';
 import { AccountMenu } from '@/components/auth/account-menu';
 import { SignInButton } from '@/components/auth/sign-in-button';
+import { MobileNav, type NavLink } from '@/components/mobile-nav';
 import { getViewer, type Viewer } from '@/lib/auth';
 import { countPendingRequests } from '@/lib/members';
 
-const navLinkClass = 'text-sm text-muted-foreground hover:text-foreground';
+const navLinkClass = 'hidden text-sm text-muted-foreground hover:text-foreground sm:inline';
 
 async function loadHeaderState(): Promise<{ viewer: Viewer | null; pendingCount: number }> {
   try {
@@ -25,6 +26,16 @@ export async function SiteHeader() {
   const { viewer, pendingCount } = await loadHeaderState();
   const isOwner = viewer?.isOwner ?? false;
   const showJoin = viewer !== null && !viewer.isMember && viewer.memberStatus !== 'pending';
+  const mobileLinks: NavLink[] = [
+    { href: '/search', label: 'Search' },
+    ...(isOwner
+      ? [
+          { href: '/upload', label: 'Upload' },
+          { href: '/admin/members', label: 'Members', badge: pendingCount },
+        ]
+      : []),
+    ...(showJoin ? [{ href: '/join', label: 'Join', isAccent: true }] : []),
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md">
@@ -32,6 +43,7 @@ export async function SiteHeader() {
         <Link href="/" className="font-semibold tracking-tight">
           Experience<span className="text-primary">.</span>
         </Link>
+        <MobileNav links={mobileLinks} />
         <Link href="/search" className={navLinkClass}>
           Search
         </Link>
@@ -52,7 +64,7 @@ export async function SiteHeader() {
         )}
         <div className="ml-auto flex items-center gap-3">
           {showJoin && (
-            <Link href="/join" className="text-sm text-primary hover:underline">
+            <Link href="/join" className="hidden text-sm text-primary hover:underline sm:inline">
               Join
             </Link>
           )}

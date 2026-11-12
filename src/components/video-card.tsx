@@ -13,7 +13,8 @@ export function VideoCard({ video }: { video: VideoCardData }) {
   return (
     <Link
       href={`/videos/${video.id}`}
-      className="group flex flex-col rounded-xl bg-glass p-1.5 transition duration-200 hover:-translate-y-0.5 hover:bg-glass-hover hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_30%,transparent),0_8px_32px_-12px_color-mix(in_oklab,var(--primary)_40%,transparent)] focus-visible:outline-2"
+      data-glow
+      className="group glow-edge flex flex-col rounded-xl bg-glass p-1.5 transition duration-200 hover:-translate-y-0.5 hover:bg-glass-hover hover:shadow-[0_8px_32px_-12px_color-mix(in_oklab,var(--primary)_40%,transparent)] focus-visible:outline-2"
     >
       <div className="relative aspect-video overflow-hidden rounded-lg bg-thumb">
         {video.thumbnailUrl ? (

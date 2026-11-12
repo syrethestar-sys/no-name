@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { AuthDialogProvider } from '@/components/auth/auth-dialog-provider';
+import { GlowTracker } from '@/components/glow-tracker';
 import { SiteHeader } from '@/components/site-header';
 import './globals.css';
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <AuthDialogProvider>
             <SiteHeader />
             {children}
+            <GlowTracker />
           </AuthDialogProvider>
         </ClerkProvider>
       </body>

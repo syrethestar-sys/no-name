@@ -76,6 +76,53 @@
   box-shadow: inset 0 1px 0 var(--glass-edge);
 }
 
+/*
+ * Mint light on a card's edge that follows the mouse (position from GlowTracker).
+ * A 1px ring is cut out with a mask, so only the border lights up.
+ */
+@utility glow-edge {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: radial-gradient(
+      200px circle at var(--glow-x, 50%) var(--glow-y, 50%),
+      var(--primary),
+      transparent 70%
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+  }
+  /* A faint wash of the same light inside the card, so the edge doesn't glow alone. */
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      300px circle at var(--glow-x, 50%) var(--glow-y, 50%),
+      color-mix(in oklab, var(--primary) 7%, transparent),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 200ms;
+    pointer-events: none;
+  }
+  &:hover::before,
+  &:hover::after,
+  &:focus-visible::before {
+    opacity: 1;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
