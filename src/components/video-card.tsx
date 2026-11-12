@@ -1,13 +1,12 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRightIcon, HeartIcon, LockIcon, StarIcon } from 'lucide-react';
-import { formatDate, formatDuration, formatRating } from '@/lib/format';
+import { ArrowUpRightIcon, HeartIcon, StarIcon } from 'lucide-react';
+import { VideoThumbnail } from '@/components/video-thumbnail';
+import { formatDate, formatRating } from '@/lib/format';
 import { TOPIC_LABELS } from '@/lib/labels';
 import type { VideoCardData } from '@/lib/videos';
 
 /** Borderless glass card: inset thumbnail, then title row and a quiet meta line (getlayers-style). */
 export function VideoCard({ video }: { video: VideoCardData }) {
-  const duration = formatDuration(video.durationSeconds);
   const isPublic = video.visibility === 'public';
 
   return (
@@ -16,35 +15,10 @@ export function VideoCard({ video }: { video: VideoCardData }) {
       data-glow
       className="group glow-edge flex flex-col rounded-xl bg-glass p-1.5 transition duration-200 hover:-translate-y-0.5 hover:bg-glass-hover hover:shadow-[0_8px_32px_-12px_color-mix(in_oklab,var(--primary)_40%,transparent)] focus-visible:outline-2"
     >
-      <div className="relative aspect-video overflow-hidden rounded-lg bg-thumb">
-        {video.thumbnailUrl ? (
-          <Image
-            src={video.thumbnailUrl}
-            alt=""
-            fill
-            unoptimized
-            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            className={`object-cover transition-transform duration-300 group-hover:scale-[1.03] ${
-              video.isLocked ? 'scale-110 blur-md brightness-50' : ''
-            }`}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center font-mono text-xs text-muted-foreground">
-            no thumbnail
-          </div>
-        )}
-        {video.isLocked && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 text-sm">
-            <LockIcon className="size-5 text-primary" aria-hidden />
-            <span>Members only</span>
-          </div>
-        )}
-        {duration && (
-          <span className="absolute right-2 bottom-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-xs">
-            {duration}
-          </span>
-        )}
-      </div>
+      <VideoThumbnail
+        video={video}
+        sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+      />
       <div className="flex flex-1 flex-col gap-1 px-1.5 pt-2.5 pb-1.5">
         <div className="flex items-start gap-1.5">
           <ArrowUpRightIcon
