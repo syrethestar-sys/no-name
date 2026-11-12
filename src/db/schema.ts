@@ -30,6 +30,8 @@ export const videos = pgTable('videos', {
   description: text('description').notNull().default(''),
   storagePath: text('storage_path').notNull(),
   thumbnailPath: text('thumbnail_path'),
+  /** Speech-only audio (Opus webm) the browser extracts; transcribed instead of the video. */
+  audioPath: text('audio_path'),
   durationSeconds: integer('duration_seconds'),
   // Members-only by default: the owner opts a video into being a public teaser.
   visibility: videoVisibility('visibility').notNull().default('members'),

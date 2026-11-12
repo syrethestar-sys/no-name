@@ -36,6 +36,42 @@ export function buildDocuments(
   return documents;
 }
 
+/** The speech-only audio when the browser made one (much smaller), else the video itself. */
+async function downloadForTranscription(
+  video: Pick<Video, 'id' | 'storagePath' | 'audioPath'>,
+): Promise<{ file: Blob; fileName: string }> {
+  const fileNameOf = (path: string) => path.split('/').pop() ?? 'video.mp4';
+  if (video.audioPath) {
+    const { data, error } = await videoStorage().download(video.audioPath);
+    if (!error) return { file: data, fileName: fileNameOf(video.audioPath) };
+    console.error('audio download failed, using the video', video.id, error);
+  }
+  const { data, error } = await videoStorage().download(video.storagePath);
+  if (error) throw error;
+  return { file: data, fileName: fileNameOf(video.storagePath) };
+}
+
+/** Points a video at new audio and removes the audio it replaces. */
+export async function saveAudioPath(
+  videoId: string,
+  audioPath: string,
+): Promise<'saved' | 'missing'> {
+  const db = getDb();
+  const [video] = await db
+    .select({ audioPath: videos.audioPath })
+    .from(videos)
+    .where(eq(videos.id, videoId))
+    .limit(1);
+  if (!video) return 'missing';
+
+  await db.update(videos).set({ audioPath }).where(eq(videos.id, videoId));
+  if (video.audioPath && video.audioPath !== audioPath) {
+    const { error } = await videoStorage().remove([video.audioPath]);
+    if (error) console.error('old audio cleanup failed', video.audioPath, error);
+  }
+  return 'saved';
+}
+
 export type TranscribeOutcome = 'done' | 'failed' | 'too-big' | 'missing';
 
 /**
@@ -51,15 +87,13 @@ export async function transcribeVideo(videoId: string): Promise<TranscribeOutcom
     db.update(videos).set({ transcriptStatus: 'failed' }).where(eq(videos.id, videoId));
 
   try {
-    const { data, error } = await videoStorage().download(video.storagePath);
-    if (error) throw error;
-    if (data.size > MAX_TRANSCRIBE_BYTES) {
+    const { file, fileName } = await downloadForTranscription(video);
+    if (file.size > MAX_TRANSCRIBE_BYTES) {
       await markFailed();
       return 'too-big';
     }
 
-    const fileName = video.storagePath.split('/').pop() ?? 'video.mp4';
-    const { text, language } = await transcribeFile(data, fileName);
+    const { text, language } = await transcribeFile(file, fileName);
     await db
       .update(videos)
       .set({ transcript: text, language, transcriptStatus: 'done' })

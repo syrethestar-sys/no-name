@@ -50,13 +50,14 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   if (!isVideoId(id)) return Response.json({ error: 'Video not found.' }, { status: 404 });
 
   try {
-    const [deleted] = await getDb()
-      .delete(videos)
-      .where(eq(videos.id, id))
-      .returning({ storagePath: videos.storagePath, thumbnailPath: videos.thumbnailPath });
+    const [deleted] = await getDb().delete(videos).where(eq(videos.id, id)).returning({
+      storagePath: videos.storagePath,
+      thumbnailPath: videos.thumbnailPath,
+      audioPath: videos.audioPath,
+    });
     if (!deleted) return Response.json({ error: 'Video not found.' }, { status: 404 });
 
-    const paths = [deleted.storagePath, deleted.thumbnailPath].filter(
+    const paths = [deleted.storagePath, deleted.thumbnailPath, deleted.audioPath].filter(
       (path): path is string => path !== null,
     );
     // The row is already gone, so a failed file delete only leaves an orphan file. Log it, don't fail.

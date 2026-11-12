@@ -6,7 +6,8 @@ const BUCKET = 'videos';
 const options = {
   public: false,
   fileSizeLimit: '50MB',
-  allowedMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime', 'image/jpeg'],
+  // audio/webm: the speech-only copy the browser makes for transcription.
+  allowedMimeTypes: ['video/mp4', 'video/webm', 'video/quicktime', 'image/jpeg', 'audio/webm'],
 };
 
 const url = process.env.SUPABASE_URL;
@@ -28,5 +29,5 @@ if (error) {
   process.exit(1);
 }
 console.log(
-  `Bucket "${BUCKET}" ${existing ? 'updated' : 'created'} (private, 50MB, video + jpeg).`,
+  `Bucket "${BUCKET}" ${existing ? 'updated' : 'created'} (private, 50MB, video + jpeg + audio).`,
 );
