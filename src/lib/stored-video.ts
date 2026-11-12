@@ -1,12 +1,19 @@
 import 'server-only';
-import { r2Delete, r2Download, r2DownloadUrl } from '@/lib/r2';
-import { videoStorage } from '@/lib/supabase';
+import { isR2Configured, MAX_R2_VIDEO_BYTES, r2Delete, r2Download, r2DownloadUrl } from '@/lib/r2';
+import { MAX_VIDEO_BYTES, videoStorage } from '@/lib/supabase';
 import type { Video } from '@/types/db';
 
 // Video files live on Supabase (older, up to 50 MB) or R2 (newer, up to 2 GB).
 // Thumbnails and speech audio always stay on Supabase.
 // YouTube videos have no file of ours (`storagePath` is null): the page plays them by id.
 type StoredVideo = Pick<Video, 'storageProvider' | 'storagePath'>;
+
+/** Where new uploads go: R2 once its keys are set (up to 2 GB), else Supabase (up to 50 MB). */
+export function uploadTarget(): { storageProvider: 'supabase' | 'r2'; maxBytes: number } {
+  return isR2Configured()
+    ? { storageProvider: 'r2', maxBytes: MAX_R2_VIDEO_BYTES }
+    : { storageProvider: 'supabase', maxBytes: MAX_VIDEO_BYTES };
+}
 
 function filePathOf(video: StoredVideo): string {
   if (video.storagePath === null) throw new Error('This video has no stored file.');
