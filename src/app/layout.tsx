@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
+import { ClerkProvider } from '@clerk/nextjs';
+import { dark } from '@clerk/ui/themes';
+import { SiteHeader } from '@/components/site-header';
 import './globals.css';
 
 const inter = Inter({ variable: '--font-inter', subsets: ['latin', 'cyrillic'] });
@@ -16,7 +19,12 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>{children}</body>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
+        <ClerkProvider appearance={{ theme: dark, variables: { colorPrimary: '#5fd38d' } }}>
+          <SiteHeader />
+          {children}
+        </ClerkProvider>
+      </body>
     </html>
   );
 }

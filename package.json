@@ -12,9 +12,12 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@clerk/nextjs": "^7.9.25",
+    "@clerk/ui": "^1.42.4",
     "next": "15.5.29",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "~19.1.4",
+    "react-dom": "~19.1.4",
+    "server-only": "^0.0.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
