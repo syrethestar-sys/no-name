@@ -18,6 +18,9 @@ import { COMMENTS_PAGE_SIZE } from '@/lib/comments';
 import { getRatingState } from '@/lib/ratings';
 import { getVideoForPage } from '@/lib/videos';
 
+const metaChipClass =
+  'rounded-md bg-glass px-2 py-0.5 font-mono text-xs text-muted-foreground shadow-[inset_0_1px_0_var(--glass-edge)]';
+
 function reactionBlockerFor(userId: string | null, isLocked: boolean): ReactionBlocker {
   if (!userId) return 'signed-out';
   return isLocked ? 'locked' : null;
@@ -56,71 +59,87 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
   const reactionBlocker = reactionBlockerFor(viewer.userId, video.isLocked);
   const duration = formatDuration(video.durationSeconds);
 
+  // The side column only appears once related videos have loaded.
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      {video.playbackUrl ? (
-        <div className="overflow-hidden rounded-xl border bg-black">
-          <video
-            src={video.playbackUrl}
-            poster={video.posterUrl ?? undefined}
-            controls
-            playsInline
-            preload="metadata"
-            className="aspect-video w-full"
-          />
-        </div>
-      ) : (
-        <LockedVideo posterUrl={video.posterUrl} memberStatus={viewer.memberStatus} />
-      )}
-
-      <div className="mt-5 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{video.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {TOPIC_LABELS[video.topic]} · {VISIBILITY_LABELS[video.visibility]} ·{' '}
-            {formatDate(video.createdAt)}
-            {duration && ` · ${duration}`}
-          </p>
-          <div className="mt-3 flex flex-wrap items-start gap-x-6 gap-y-3">
-            <LikeButton
-              videoId={video.id}
-              initialLiked={likeState.liked}
-              initialCount={likeState.likeCount}
-              blocker={reactionBlocker}
+    <main className="mx-auto grid max-w-7xl gap-x-8 px-4 py-8 lg:has-[>aside>section]:grid-cols-[minmax(0,1fr)_20rem]">
+      <div className="mx-auto w-full max-w-5xl min-w-0">
+        {video.playbackUrl ? (
+          <div className="overflow-hidden rounded-xl bg-black shadow-[0_0_80px_-24px_color-mix(in_oklab,var(--primary)_35%,transparent)]">
+            <video
+              src={video.playbackUrl}
+              poster={video.posterUrl ?? undefined}
+              controls
+              playsInline
+              preload="metadata"
+              className="aspect-video w-full"
             />
-            <StarRating videoId={video.id} initialRating={ratingState} blocker={reactionBlocker} />
           </div>
+        ) : (
+          <LockedVideo posterUrl={video.posterUrl} memberStatus={viewer.memberStatus} />
+        )}
+
+        <h1 className="mt-6 text-2xl font-light tracking-tight sm:text-3xl">{video.title}</h1>
+        <ul className="mt-3 flex flex-wrap gap-1.5" aria-label="Video info">
+          {[
+            TOPIC_LABELS[video.topic],
+            VISIBILITY_LABELS[video.visibility],
+            formatDate(video.createdAt),
+            duration,
+          ].map(
+            (info) =>
+              info && (
+                <li key={info} className={metaChipClass}>
+                  {info}
+                </li>
+              ),
+          )}
+        </ul>
+        <div className="mt-4 flex flex-wrap items-start gap-x-6 gap-y-3">
+          <LikeButton
+            videoId={video.id}
+            initialLiked={likeState.liked}
+            initialCount={likeState.likeCount}
+            blocker={reactionBlocker}
+          />
+          <StarRating videoId={video.id} initialRating={ratingState} blocker={reactionBlocker} />
         </div>
+
         {viewer.isOwner && (
-          <div className="flex flex-col items-end gap-3">
-            <div className="flex items-start gap-2">
+          <section
+            aria-label="Owner tools"
+            className="glass-panel mt-6 flex flex-wrap items-start justify-between gap-3 p-3"
+          >
+            <span className="pt-1.5 font-mono text-xs text-primary">owner</span>
+            <div className="flex flex-wrap items-start justify-end gap-2">
+              <TranscribeButton videoId={video.id} transcriptStatus={video.transcriptStatus} />
               <VisibilityToggle videoId={video.id} visibility={video.visibility} />
               <DeleteVideoButton videoId={video.id} />
             </div>
-            <TranscribeButton videoId={video.id} transcriptStatus={video.transcriptStatus} />
-          </div>
+          </section>
+        )}
+
+        {video.description && !video.isLocked && (
+          <p className="mt-6 whitespace-pre-line leading-relaxed text-foreground/90">
+            {video.description}
+          </p>
+        )}
+
+        {/* A silent video transcribes to "." — not worth a panel. */}
+        {!video.isLocked && video.transcript && video.transcript.split(/\s+/).length >= 5 && (
+          <TranscriptPanel transcript={video.transcript} />
+        )}
+
+        {!video.isLocked && (
+          <CommentsSection videoId={video.id} viewer={viewer} limit={commentLimitFrom(comments)} />
         )}
       </div>
 
-      {video.description && !video.isLocked && (
-        <p className="mt-5 whitespace-pre-line leading-relaxed text-foreground/90">
-          {video.description}
-        </p>
-      )}
-
-      {/* A silent video transcribes to "." — not worth a panel. */}
-      {!video.isLocked && video.transcript && video.transcript.split(/\s+/).length >= 5 && (
-        <TranscriptPanel transcript={video.transcript} />
-      )}
-
       {/* Pinecone can be slow; don't hold the rest of the page for it. */}
-      <Suspense fallback={null}>
-        <RelatedVideos video={video} viewerIsMember={viewer.isMember} />
-      </Suspense>
-
-      {!video.isLocked && (
-        <CommentsSection videoId={video.id} viewer={viewer} limit={commentLimitFrom(comments)} />
-      )}
+      <aside>
+        <Suspense fallback={null}>
+          <RelatedVideos video={video} viewerIsMember={viewer.isMember} />
+        </Suspense>
+      </aside>
     </main>
   );
 }
