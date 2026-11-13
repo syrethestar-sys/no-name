@@ -69,7 +69,7 @@ export function TvWallHero({
   const rightScreens = screens.filter((_, index) => index % 4 >= 2);
 
   return (
-    <section className="relative isolate -mx-4 flex min-h-[34rem] items-center justify-center overflow-hidden rounded-xl bg-[radial-gradient(60%_55%_at_50%_45%,var(--secondary),var(--background)_75%)] sm:h-[calc(100svh-7rem)]">
+    <section className="relative isolate mx-[calc(50%-50vw)] flex min-h-[34rem] items-center justify-center overflow-hidden bg-[radial-gradient(60%_55%_at_50%_45%,var(--secondary),var(--background)_75%)] sm:h-[calc(100svh-7rem)]">
       <WallParallax className="tv-wall absolute inset-0 [perspective:1100px]">
         <div className="absolute top-[6%] left-[-12%] h-[86%] w-[62%] opacity-60 transition-transform duration-700 ease-out [transform:translate3d(calc(var(--mx,0)*-22px),calc(var(--my,0)*-12px),0)_rotateY(26deg)] sm:left-[-2%] sm:w-[44%] sm:opacity-100">
           {LEFT_SLOTS.map((slot, index) => (
