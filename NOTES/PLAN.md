@@ -423,3 +423,17 @@ What the style is made of, and how we do it:
 (D) headings, cards, player and other pages.
 
 Owner reviews in the morning and anything can be reverted per PR.
+
+## One filter button (2026-11-13, approved: "ok build it")
+
+Owner: "change newest, most liked, trading, coding all that into one filter button with icon from lucide".
+
+- (Owner changed it: **two buttons**, Topic left + Sort right, same menus, no Reset.) Replace the topic tabs + sort tabs above the grid with **one button**: lucide `SlidersHorizontal` icon + "Filter".
+  When something other than the default is picked, the button shows it (e.g. `Filter · Coding · Most liked`) and a small mint dot.
+- Click → dropdown (the existing shadcn/Base UI `dropdown-menu`), two groups:
+  - **Topic**: All `LayoutGrid`, Trading `TrendingUp`, Coding `Code`, Work & life `Coffee` — each with its video count.
+  - **Sort**: Newest `Clock`, Most liked `Heart`, Top rated `Star`.
+  - The picked item has a `Check`. Each item is a link (same `?topic=&sort=` URLs as now), so back/forward and shared links keep working.
+- A "Reset" item at the bottom when a filter is on.
+- Files: new `src/components/feed-filter.tsx`; remove `topic-chips.tsx` + `sort-chips.tsx`; update `(feed)/page.tsx`. No server or DB change.
+- Check: lint, typecheck, tests; screenshots wide + phone; keyboard (Tab, Enter, Esc) works.

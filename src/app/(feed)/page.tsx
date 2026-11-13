@@ -1,16 +1,18 @@
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
-import { SortChips } from '@/components/sort-chips';
-import { TopicChips } from '@/components/topic-chips';
+import { FilterMenu, type FilterOption } from '@/components/feed-filter';
 import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
 import { TvWallHero } from '@/components/tv-wall-hero';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
 import { getViewer } from '@/lib/auth';
-import { SORT_LABELS } from '@/lib/labels';
+import { SORT_LABELS, TOPIC_LABELS } from '@/lib/labels';
 import {
   countReadyVideosByTopic,
+  feedHref,
+  FEED_SORTS,
+  VIDEO_TOPICS,
   isFeedSort,
   isVideoTopic,
   listReadyVideos,
@@ -59,6 +61,29 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // The full-screen TV wall opens the plain home page; filtered views stay compact.
   const isFrontPage = topic === null && sort === 'newest';
 
+  const topicOptions: FilterOption[] = [
+    {
+      value: 'all',
+      label: 'All',
+      href: feedHref({ topic: null, sort }),
+      count: topicCounts?.all,
+      isActive: topic === null,
+    },
+    ...VIDEO_TOPICS.map((value) => ({
+      value,
+      label: TOPIC_LABELS[value],
+      href: feedHref({ topic: value, sort }),
+      count: topicCounts?.[value],
+      isActive: topic === value,
+    })),
+  ];
+  const sortOptions: FilterOption[] = FEED_SORTS.map((value) => ({
+    value,
+    label: SORT_LABELS[value],
+    href: feedHref({ topic, sort: value }),
+    isActive: sort === value,
+  }));
+
   return (
     <main className="mx-auto max-w-7xl px-4 py-12">
       {isFrontPage ? (
@@ -77,8 +102,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         id="videos"
         className="mt-8 flex scroll-mt-24 flex-wrap items-center justify-between gap-3 border-b pb-3"
       >
-        <TopicChips activeTopic={topic} sort={sort} counts={topicCounts} />
-        <SortChips activeSort={sort} topic={topic} />
+        <FilterMenu kind="topic" options={topicOptions} />
+        <FilterMenu kind="sort" options={sortOptions} />
       </div>
 
       {loadFailed && (
