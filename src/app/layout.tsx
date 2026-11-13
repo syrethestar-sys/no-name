@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable} ${oswald.variable}`}>
-      <body className="antialiased">
+      <body className="overflow-x-clip antialiased">
         {/* Clerk runs underneath; every sign-in screen is our own (see components/auth). */}
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-in">
           <AuthDialogProvider>
