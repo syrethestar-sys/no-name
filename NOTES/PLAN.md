@@ -428,7 +428,7 @@ Owner reviews in the morning and anything can be reverted per PR.
 
 Owner: "change newest, most liked, trading, coding all that into one filter button with icon from lucide".
 
-- Replace the topic tabs + sort tabs above the grid with **one button**: lucide `SlidersHorizontal` icon + "Filter".
+- (Owner changed it: **two buttons**, Topic left + Sort right, same menus, no Reset.) Replace the topic tabs + sort tabs above the grid with **one button**: lucide `SlidersHorizontal` icon + "Filter".
   When something other than the default is picked, the button shows it (e.g. `Filter · Coding · Most liked`) and a small mint dot.
 - Click → dropdown (the existing shadcn/Base UI `dropdown-menu`), two groups:
   - **Topic**: All `LayoutGrid`, Trading `TrendingUp`, Coding `Code`, Work & life `Coffee` — each with its video count.

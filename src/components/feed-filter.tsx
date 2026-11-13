@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import {
+  ArrowUpDownIcon,
   CheckIcon,
   ChevronDownIcon,
   ClockIcon,
@@ -62,19 +63,19 @@ function OptionItem({ option }: { option: FilterOption }) {
 }
 
 /** One dropdown button (Topic or Sort). Every choice is a plain link, so URLs stay shareable. */
+const MENUS = {
+  topic: { name: 'Topic', icon: LayoutGridIcon, defaultValue: 'all', align: 'start' },
+  sort: { name: 'Sort', icon: ArrowUpDownIcon, defaultValue: 'newest', align: 'end' },
+} as const;
+
 export function FilterMenu({
-  name,
-  icon: ButtonIcon,
+  kind,
   options,
-  defaultValue,
-  align = 'start',
 }: {
-  name: string;
-  icon: LucideIcon;
+  kind: keyof typeof MENUS;
   options: FilterOption[];
-  defaultValue: string;
-  align?: 'start' | 'end';
 }) {
+  const { name, icon: ButtonIcon, defaultValue, align } = MENUS[kind];
   const activeOption = options.find((option) => option.isActive);
   const isChanged = activeOption !== undefined && activeOption.value !== defaultValue;
 
