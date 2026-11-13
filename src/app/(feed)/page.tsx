@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
-import { FeedFilter, type FilterOption } from '@/components/feed-filter';
+import { FilterMenu, type FilterOption } from '@/components/feed-filter';
+import { ArrowUpDownIcon, LayoutGridIcon } from 'lucide-react';
 import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
 import { TvWallHero } from '@/components/tv-wall-hero';
@@ -102,10 +103,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         id="videos"
         className="mt-8 flex scroll-mt-24 flex-wrap items-center justify-between gap-3 border-b pb-3"
       >
-        <FeedFilter
-          topicOptions={topicOptions}
-          sortOptions={sortOptions}
-          resetHref={feedHref({ topic: null, sort: 'newest' })}
+        <FilterMenu name="Topic" icon={LayoutGridIcon} options={topicOptions} defaultValue="all" />
+        <FilterMenu
+          name="Sort"
+          icon={ArrowUpDownIcon}
+          options={sortOptions}
+          defaultValue="newest"
+          align="end"
         />
       </div>
 

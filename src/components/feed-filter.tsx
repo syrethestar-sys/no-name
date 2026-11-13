@@ -3,13 +3,12 @@
 import Link from 'next/link';
 import {
   CheckIcon,
+  ChevronDownIcon,
   ClockIcon,
   CodeIcon,
   CoffeeIcon,
   HeartIcon,
   LayoutGridIcon,
-  RotateCcwIcon,
-  SlidersHorizontalIcon,
   StarIcon,
   TrendingUpIcon,
   type LucideIcon,
@@ -20,7 +19,6 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
@@ -63,59 +61,47 @@ function OptionItem({ option }: { option: FilterOption }) {
   );
 }
 
-/** Topic + sort in one "Filter" button. Every choice is a plain link, so URLs stay shareable. */
-export function FeedFilter({
-  topicOptions,
-  sortOptions,
-  resetHref,
+/** One dropdown button (Topic or Sort). Every choice is a plain link, so URLs stay shareable. */
+export function FilterMenu({
+  name,
+  icon: ButtonIcon,
+  options,
+  defaultValue,
+  align = 'start',
 }: {
-  topicOptions: FilterOption[];
-  sortOptions: FilterOption[];
-  resetHref: string;
+  name: string;
+  icon: LucideIcon;
+  options: FilterOption[];
+  defaultValue: string;
+  align?: 'start' | 'end';
 }) {
-  const activeTopic = topicOptions.find((option) => option.isActive && option.value !== 'all');
-  const activeSort = sortOptions.find((option) => option.isActive && option.value !== 'newest');
-  const activeLabels = [activeTopic?.label, activeSort?.label].filter(Boolean);
-  const isFiltered = activeLabels.length > 0;
+  const activeOption = options.find((option) => option.isActive);
+  const isChanged = activeOption !== undefined && activeOption.value !== defaultValue;
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="relative flex h-8 items-center gap-2 rounded-[10px] bg-glass px-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_var(--glass-edge)] transition-colors outline-none hover:bg-glass-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:bg-glass-hover data-popup-open:text-foreground">
-        <SlidersHorizontalIcon className="size-4" aria-hidden />
-        Filter
-        {isFiltered && (
-          <>
-            <span className="text-foreground">· {activeLabels.join(' · ')}</span>
-            <span
-              className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary"
-              aria-hidden
-            />
-          </>
+      <DropdownMenuTrigger
+        aria-label={`${name}: ${activeOption?.label ?? ''}`}
+        className="relative flex h-8 items-center gap-2 rounded-[10px] bg-glass px-3 text-sm text-muted-foreground shadow-[inset_0_1px_0_var(--glass-edge)] transition-colors outline-none hover:bg-glass-hover hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:bg-glass-hover data-popup-open:text-foreground"
+      >
+        <ButtonIcon className="size-4" aria-hidden />
+        {name}
+        {activeOption && <span className="text-foreground">{activeOption.label}</span>}
+        <ChevronDownIcon className="size-3.5" aria-hidden />
+        {isChanged && (
+          <span
+            className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-primary"
+            aria-hidden
+          />
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent align={align} className="w-52">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Topic</DropdownMenuLabel>
-          {topicOptions.map((option) => (
+          <DropdownMenuLabel>{name}</DropdownMenuLabel>
+          {options.map((option) => (
             <OptionItem key={option.value} option={option} />
           ))}
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Sort</DropdownMenuLabel>
-          {sortOptions.map((option) => (
-            <OptionItem key={option.value} option={option} />
-          ))}
-        </DropdownMenuGroup>
-        {isFiltered && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem render={<Link href={resetHref} />}>
-              <RotateCcwIcon aria-hidden />
-              Reset
-            </DropdownMenuItem>
-          </>
-        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
