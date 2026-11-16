@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { VideoOptionsFields } from '@/components/video-options-fields';
 import { makeSpeechAudio } from '@/lib/speech-audio';
+import { postJson, uploadSpeechAudio } from '@/lib/upload-client';
 import { readVideoDetails, uploadToSignedUrl } from '@/lib/video-file';
 import type { VideoTopic, VideoVisibility } from '@/types/db';
 
@@ -22,28 +23,6 @@ type UploadUrls = {
   audioPath: string;
   audioUploadUrl: string;
 };
-
-/** Uploads the speech-only audio if the browser made one. Any failure means "use the video". */
-async function uploadSpeechAudio(audio: Blob | null, urls: UploadUrls): Promise<string | null> {
-  if (!audio) return null;
-  try {
-    await uploadToSignedUrl(urls.audioUploadUrl, audio, 'audio/webm');
-    return urls.audioPath;
-  } catch {
-    return null;
-  }
-}
-
-async function postJson<T>(url: string, body: unknown): Promise<T> {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error ?? 'Something went wrong. Try again.');
-  return data as T;
-}
 
 export function UploadForm() {
   const router = useRouter();
@@ -86,7 +65,11 @@ export function UploadForm() {
         await uploadToSignedUrl(urls.thumbnailUploadUrl, details.thumbnail, 'image/jpeg');
       }
       setIsPreparingAudio(true);
-      const audioPath = await uploadSpeechAudio(await speechAudio, urls);
+      const audioPath = await uploadSpeechAudio(
+        await speechAudio,
+        urls.audioUploadUrl,
+        urls.audioPath,
+      );
       const saved = await postJson<{ id: string }>('/api/videos', {
         title,
         description,

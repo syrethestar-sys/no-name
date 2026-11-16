@@ -128,7 +128,10 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
                 hasAudio={video.audioPath !== null}
               />
               <VisibilityToggle videoId={video.id} visibility={video.visibility} />
-              <DeleteVideoButton videoId={video.id} />
+              <DeleteVideoButton
+                videoId={video.id}
+                isYoutube={video.storageProvider === 'youtube'}
+              />
             </div>
           </section>
         )}
