@@ -7,7 +7,7 @@ const TABS = [
   { href: '/settings/profile', label: 'Profile' },
   { href: '/settings/membership', label: 'Membership' },
   { href: '/settings/activity', label: 'Activity' },
-  { href: '/settings/safety', label: 'Account safety' },
+  { href: '/settings/safety', label: 'Safety' },
 ] as const;
 
 /** The settings sections: a column on wide screens, a scrolling row on phones. */

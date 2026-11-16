@@ -594,3 +594,13 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 **Not in this fix:** a per-query time limit. `postgres` has none of its own, and sending `statement_timeout` as a startup option may be refused by the Supabase transaction pooler (port 6543), so I would not guess; if the hang comes back with these options, that is the next step (test it against the pooler first).
 
 **Check:** lint, typecheck, tests, build; open the home page twice 30 s apart (the second call must reconnect and answer, not hang). I cannot reproduce the original dropped-connection state on demand, so this PR **reduces the chance of the hang but is not proven to fix it**; the PR body will say so.
+
+## Settings phone fixes (2026-11-16, APPROVED: owner "fix")
+
+Found by a phone-width (390 px) check of the settings stack tip with a signed-in test user. No page scrolled sideways; two small problems:
+- **The active "Account safety" tab was cut off** ("Account sa…"): the tab row scrolls but does not bring the active tab into view. Fix: the tab is labelled **"Safety"** (the page title and the avatar menu keep "Account safety"; the route is already `/settings/safety`).
+- **Long text was cut with "…"** on the email row and the device row, so a full address could not be read on a phone. Fix: both wrap (`break-all` for the email, `break-words` for the device) instead of `truncate`.
+
+Text and class changes only, in `settings-tabs.tsx`, `email-settings.tsx`, `device-settings.tsx`. One small PR on top of #51 (its base moves to `main` as the stack merges).
+
+**Check:** lint, typecheck, tests, build, then the same phone-width look with a long test email address on the Safety tab.
