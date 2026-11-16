@@ -165,8 +165,10 @@ export async function countReadyVideosByTopic(): Promise<TopicCounts> {
 }
 
 export type VideoForPage = Video & {
-  /** null when locked: the page must not render a player. */
+  /** Signed file link; null when locked or when the video is on YouTube. */
   playbackUrl: string | null;
+  /** The raw `youtubeId` is cleared when locked, so a locked page never carries it. */
+  youtubeId: string | null;
   posterUrl: string | null;
   isLocked: boolean;
 };
@@ -182,8 +184,9 @@ export async function getVideoForPage(
   if (!video || video.status !== 'ready') return null;
 
   const isLocked = isLockedFor(video.visibility, viewerIsMember);
+  const hasFile = video.storagePath !== null;
   const [playbackUrl, poster] = await Promise.all([
-    isLocked ? null : videoPlaybackUrl(video, SIGNED_URL_SECONDS),
+    isLocked || !hasFile ? null : videoPlaybackUrl(video, SIGNED_URL_SECONDS),
     video.thumbnailPath
       ? videoStorage().createSignedUrl(video.thumbnailPath, SIGNED_URL_SECONDS)
       : null,
@@ -191,6 +194,7 @@ export async function getVideoForPage(
 
   return {
     ...video,
+    youtubeId: isLocked ? null : video.youtubeId,
     playbackUrl,
     posterUrl: poster?.data?.signedUrl ?? null,
     isLocked,

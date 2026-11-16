@@ -10,6 +10,7 @@ import { TranscriptPanel } from '@/components/transcript-panel';
 import { TranscribeButton } from '@/components/transcribe-button';
 import { ViewfinderCorners } from '@/components/viewfinder-corners';
 import { VisibilityToggle } from '@/components/visibility-toggle';
+import { YoutubePlayer } from '@/components/youtube-player';
 import { getViewer } from '@/lib/auth';
 import { formatDate, formatDuration } from '@/lib/format';
 import { TOPIC_LABELS, VISIBILITY_LABELS } from '@/lib/labels';
@@ -64,19 +65,23 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
   return (
     <main className="mx-auto grid max-w-7xl gap-x-8 px-4 py-8 lg:has-[>aside>section]:grid-cols-[minmax(0,1fr)_20rem]">
       <div className="mx-auto w-full max-w-5xl min-w-0">
-        {video.playbackUrl ? (
+        {video.youtubeId || video.playbackUrl ? (
           <div className="group/player relative overflow-hidden rounded-xl bg-black shadow-[0_0_80px_-24px_color-mix(in_oklab,var(--primary)_35%,transparent)]">
-            <video
-              src={video.playbackUrl}
-              poster={video.posterUrl ?? undefined}
-              controls
-              playsInline
-              preload="metadata"
-              className="aspect-video w-full"
-            />
+            {video.youtubeId ? (
+              <YoutubePlayer youtubeId={video.youtubeId} title={video.title} />
+            ) : (
+              <video
+                src={video.playbackUrl ?? undefined}
+                poster={video.posterUrl ?? undefined}
+                controls
+                playsInline
+                preload="metadata"
+                className="aspect-video w-full"
+              />
+            )}
             {/* Brackets fade while the cursor is on the player, so they never cover controls. */}
             <div className="transition-opacity duration-300 group-hover/player:opacity-0">
-              <ViewfinderCorners label="PLAY" />
+              <ViewfinderCorners label={video.youtubeId ? undefined : 'PLAY'} />
             </div>
           </div>
         ) : (

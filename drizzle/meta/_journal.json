@@ -36,6 +36,13 @@
       "when": 1794507194837,
       "tag": "0004_storage_provider",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794806424725,
+      "tag": "0005_youtube_videos",
+      "breakpoints": true
     }
   ]
 }
