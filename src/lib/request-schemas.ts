@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { COMMENT_MAX_LENGTH } from '@/lib/comments';
 import { MEMBER_INTERESTS } from '@/lib/members';
 import { AUDIO_PATH_PATTERN } from '@/lib/supabase';
+import { parseYoutubeId } from '@/lib/youtube';
 
 // Request bodies the API routes check. Kept here (not in the route files) so tests can use them.
 
@@ -24,6 +25,24 @@ export const JoinRequestBody = z.object({
     .nullable()
     .default(null),
 });
+
+/** A pasted YouTube link (or bare id) in, the 11-character video id out. */
+export const YoutubeLink = z
+  .string()
+  .trim()
+  .max(300)
+  .transform((value, context) => {
+    const youtubeId = parseYoutubeId(value);
+    if (!youtubeId) {
+      context.addIssue({ code: 'custom', message: 'Not a YouTube link.' });
+      return z.NEVER;
+    }
+    return youtubeId;
+  });
+
+/** A saved video comes from exactly one place: an uploaded file or a YouTube link. */
+export const hasOneVideoSource = (body: { videoPath?: string; youtubeUrl?: string }) =>
+  (body.videoPath !== undefined) !== (body.youtubeUrl !== undefined);
 
 /** `audioPath`: the owner's browser just uploaded speech-only audio for this video. */
 export const TranscribeBody = z.object({
