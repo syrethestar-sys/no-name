@@ -536,7 +536,7 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 
 **Check:** lint, typecheck, tests, build (with a separate `distDir`, see the handoff), a look at the wall, and the network tab: one request for the clip.
 
-## Profile menu + /settings page (2026-11-16, WAITING FOR OWNER OK)
+## Profile menu + /settings page (2026-11-16, APPROVED; owner chose A: delete a deleted person's comments)
 
 Owner: "we need more settings on profile button". Chosen in a question round: **all four** — edit profile, my membership, my activity, account safety — on **a `/settings` page**, with the avatar menu linking to it.
 
