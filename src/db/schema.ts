@@ -21,31 +21,48 @@ export const videoLanguage = pgEnum('video_language', ['mn', 'en']);
 export const videoVisibility = pgEnum('video_visibility', ['public', 'members']);
 export const videoTopic = pgEnum('video_topic', ['trading', 'coding', 'life']);
 export const transcriptStatus = pgEnum('transcript_status', ['pending', 'done', 'failed']);
-/** Where the video file lives: Supabase Storage (≤ 50 MB) or Cloudflare R2 (≤ 2 GB). */
-export const storageProvider = pgEnum('storage_provider', ['supabase', 'r2']);
+/**
+ * Where the video lives: Supabase Storage (≤ 50 MB), Cloudflare R2 (≤ 2 GB), or YouTube
+ * (Unlisted, link only; we keep just the id and have no file).
+ */
+export const storageProvider = pgEnum('storage_provider', ['supabase', 'r2', 'youtube']);
 export const memberStatus = pgEnum('member_status', ['pending', 'approved', 'rejected']);
 export const memberInterest = pgEnum('member_interest', ['trading', 'coding', 'sharing', 'other']);
 
-export const videos = pgTable('videos', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  title: text('title').notNull(),
-  description: text('description').notNull().default(''),
-  storagePath: text('storage_path').notNull(),
-  storageProvider: storageProvider('storage_provider').notNull().default('supabase'),
-  thumbnailPath: text('thumbnail_path'),
-  /** Speech-only audio (Opus webm) the browser extracts; transcribed instead of the video. */
-  audioPath: text('audio_path'),
-  durationSeconds: integer('duration_seconds'),
-  // Members-only by default: the owner opts a video into being a public teaser.
-  visibility: videoVisibility('visibility').notNull().default('members'),
-  topic: videoTopic('topic').notNull().default('life'),
-  language: videoLanguage('language'), // detected by whisper (Phase 8); null for other languages
-  transcript: text('transcript'),
-  // Transcribing runs after upload; the video is watchable meanwhile.
-  transcriptStatus: transcriptStatus('transcript_status').notNull().default('pending'),
-  status: videoStatus('status').notNull().default('processing'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-}).enableRLS();
+export const videos = pgTable(
+  'videos',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: text('title').notNull(),
+    description: text('description').notNull().default(''),
+    // null only for YouTube videos, which have no file of ours.
+    storagePath: text('storage_path'),
+    storageProvider: storageProvider('storage_provider').notNull().default('supabase'),
+    // Set only when storageProvider is 'youtube'. Never send it to a viewer who can't watch.
+    youtubeId: text('youtube_id'),
+    thumbnailPath: text('thumbnail_path'),
+    /** Speech-only audio (Opus webm) the browser extracts; transcribed instead of the video. */
+    audioPath: text('audio_path'),
+    durationSeconds: integer('duration_seconds'),
+    // Members-only by default: the owner opts a video into being a public teaser.
+    visibility: videoVisibility('visibility').notNull().default('members'),
+    topic: videoTopic('topic').notNull().default('life'),
+    language: videoLanguage('language'), // detected by whisper (Phase 8); null for other languages
+    transcript: text('transcript'),
+    // Transcribing runs after upload; the video is watchable meanwhile.
+    transcriptStatus: transcriptStatus('transcript_status').notNull().default('pending'),
+    status: videoStatus('status').notNull().default('processing'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    // `::text` because a new enum value can't be used in the migration that adds it.
+    check(
+      'videos_file_or_youtube',
+      sql`(${table.storageProvider}::text = 'youtube' and ${table.youtubeId} is not null)
+        or (${table.storageProvider}::text <> 'youtube' and ${table.storagePath} is not null)`,
+    ),
+  ],
+).enableRLS();
 
 export const likes = pgTable(
   'likes',

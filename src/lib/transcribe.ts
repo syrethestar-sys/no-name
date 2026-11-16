@@ -47,7 +47,9 @@ async function downloadForTranscription(
     if (!error) return { file: data, fileName: fileNameOf(video.audioPath) };
     console.error('audio download failed, using the video', video.id, error);
   }
-  return { file: await downloadVideoFile(video), fileName: fileNameOf(video.storagePath) };
+  // A YouTube video has no file: without audio this throws and the transcript is marked failed.
+  const file = await downloadVideoFile(video);
+  return { file, fileName: fileNameOf(video.storagePath ?? 'video.mp4') };
 }
 
 /** Points a video at new audio and removes the audio it replaces. */
