@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { LogOutIcon, SettingsIcon } from 'lucide-react';
+import { ActivityIcon, IdCardIcon, LogOutIcon, UserRoundIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -15,7 +15,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-/** Our replacement for Clerk's UserButton: avatar, who you are, settings, sign out. */
+// Each opens a tab of /settings (see SettingsTabs).
+const MENU_LINKS = [
+  { href: '/settings/profile', label: 'Profile', icon: UserRoundIcon },
+  { href: '/settings/membership', label: 'Membership', icon: IdCardIcon },
+  { href: '/settings/activity', label: 'Activity', icon: ActivityIcon },
+];
+
+/** Our replacement for Clerk's UserButton: avatar, who you are, settings links, sign out. */
 export function AccountMenu() {
   const router = useRouter();
   const { signOut } = useClerk();
@@ -53,10 +60,12 @@ export function AccountMenu() {
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/settings/profile" />}>
-          <SettingsIcon aria-hidden />
-          Settings
-        </DropdownMenuItem>
+        {MENU_LINKS.map((item) => (
+          <DropdownMenuItem key={item.href} render={<Link href={item.href} />}>
+            <item.icon aria-hidden />
+            {item.label}
+          </DropdownMenuItem>
+        ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>
           <LogOutIcon aria-hidden />
