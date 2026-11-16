@@ -1,9 +1,15 @@
 import Image from 'next/image';
+import { EmptyClip } from '@/components/empty-clip';
 
 // Which part of each picture stays in view when the banner crops it (the TV sits lower in one).
+// A picture with a `clip` plays it once over the still.
 const PICTURES = {
-  'no-videos': { src: '/art/empty-no-videos.webp', position: '50% 72%' },
-  'no-results': { src: '/art/empty-no-results.webp', position: '50% 58%' },
+  'no-videos': {
+    src: '/art/empty-no-videos.webp',
+    position: '50% 72%',
+    clip: '/art/clip-static-tv.mp4',
+  },
+  'no-results': { src: '/art/empty-no-results.webp', position: '50% 58%', clip: null },
 } as const;
 
 /** A dark banner picture of an old TV with the message under it (feed and search are empty). */
@@ -14,7 +20,7 @@ export function EmptyState({
   picture: keyof typeof PICTURES;
   children: React.ReactNode;
 }) {
-  const { src, position } = PICTURES[picture];
+  const { src, position, clip } = PICTURES[picture];
 
   return (
     <div className="glass-panel mt-10 overflow-hidden text-center">
@@ -27,6 +33,7 @@ export function EmptyState({
           className="object-cover"
           style={{ objectPosition: position }}
         />
+        {clip && <EmptyClip src={clip} position={position} />}
         <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background/80 to-transparent" />
       </div>
       <div className="px-6 pt-2 pb-10">{children}</div>
