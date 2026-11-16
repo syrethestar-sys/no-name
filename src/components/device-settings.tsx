@@ -76,7 +76,7 @@ export function DeviceSettings() {
               className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-glass px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{describe(item)}</p>
+                <p className="text-sm font-medium break-words">{describe(item)}</p>
                 <p className="font-mono text-xs text-muted-foreground">
                   {isCurrent ? 'this device · now' : `active ${formatTimeAgo(item.lastActiveAt)}`}
                 </p>

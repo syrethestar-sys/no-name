@@ -565,3 +565,13 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 **Not in this plan:** notification settings (no emails are sent yet), theme (the site is dark-only), username, two-step login.
 
 **As built (2026-11-16):** five stacked PRs instead of four: #47 shell + Profile, #48 Membership + Activity, #49 Account safety with Email, #50 Devices + our own "Confirm it's you" dialog, #51 Delete account. Changes from the plan above: (1) Clerk demands a fresh check (`session_reverification_required`) before signing another device out, so there is a re-verification dialog of our own (emailed code; `useConfirmedAction` hook) used by Devices and Delete account; (2) `DELETE /api/me` also demands `has({ reverification: 'strict' })` on the server; (3) the owner-only menu links (Upload, Members) were not repeated in the avatar menu because the header already has them; (4) the plan's "check delete / multi-session in the Clerk dashboard" turned out unnecessary: everything worked on the dev instance as it is. The re-verification dialog only handles the email-code factor; a Google-only account sees "sign out, sign in again, retry". Not built: phone layout checks, MFA.
+
+## Settings phone fixes (2026-11-16, APPROVED: owner "fix")
+
+Found by a phone-width (390 px) check of the settings stack tip with a signed-in test user. No page scrolled sideways; two small problems:
+- **The active "Account safety" tab was cut off** ("Account sa…"): the tab row scrolls but does not bring the active tab into view. Fix: the tab is labelled **"Safety"** (the page title and the avatar menu keep "Account safety"; the route is already `/settings/safety`).
+- **Long text was cut with "…"** on the email row and the device row, so a full address could not be read on a phone. Fix: both wrap (`break-all` for the email, `break-words` for the device) instead of `truncate`.
+
+Text and class changes only, in `settings-tabs.tsx`, `email-settings.tsx`, `device-settings.tsx`. One small PR on top of #51 (its base moves to `main` as the stack merges).
+
+**Check:** lint, typecheck, tests, build, then the same phone-width look with a long test email address on the Safety tab.

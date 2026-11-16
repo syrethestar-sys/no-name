@@ -37,7 +37,7 @@ export function EmailSettings() {
               className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-glass px-4 py-3"
             >
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">{address.emailAddress}</p>
+                <p className="text-sm font-medium break-all">{address.emailAddress}</p>
                 <p className="font-mono text-xs text-muted-foreground">
                   {isPrimary ? 'main' : isVerified ? 'verified' : 'not verified'}
                 </p>
