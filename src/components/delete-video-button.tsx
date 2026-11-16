@@ -4,8 +4,17 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-/** Two-step delete (click, then confirm) instead of a browser confirm() dialog. */
-export function DeleteVideoButton({ videoId }: { videoId: string }) {
+/**
+ * Two-step delete (click, then confirm) instead of a browser confirm() dialog.
+ * A YouTube video is only removed from this site; the owner deletes it in YouTube Studio.
+ */
+export function DeleteVideoButton({
+  videoId,
+  isYoutube = false,
+}: {
+  videoId: string;
+  isYoutube?: boolean;
+}) {
   const router = useRouter();
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -42,6 +51,11 @@ export function DeleteVideoButton({ videoId }: { videoId: string }) {
           {isDeleting ? 'Deleting…' : 'Delete forever'}
         </Button>
       </div>
+      {isYoutube && (
+        <p className="max-w-60 text-right text-xs text-muted-foreground">
+          This removes it from the site only. Delete it in YouTube Studio too.
+        </p>
+      )}
       {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}
     </div>
   );
