@@ -536,6 +536,16 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 
 **Check:** lint, typecheck, tests, build (with a separate `distDir`, see the handoff), a look at the wall, and the network tab: one request for the clip.
 
+## Topic covers and sign-in backdrop (2026-11-16, step from the Visual assets plan; owner: "yes do that")
+
+Owner left the placement to me. Chosen, all site chrome (generated art never stands in for a video's own thumbnail):
+- **Topic cover banner:** on the feed, when a topic is picked (`/?topic=trading|coding|life`), the plain heading becomes a wide cover banner (`topic-trading|coding|life` stills, `webp`) with the same `PageHeading` over a dark gradient, plus one short line per topic. The front page (TV wall) and sort-only views are unchanged. New `TopicBanner` component; the cover files live in `public/art/`.
+- **Sign-in backdrop:** `backdrop-02` (the room of glowing TVs, no brackets) fills the sign-in page behind the glass card, dimmed with a gradient so the form stays readable. `/join` is not changed: it has a long left-aligned text block that would fight the picture.
+- Files: `src/components/topic-banner.tsx`, `src/components/page-backdrop.tsx`, `src/app/sign-in/page.tsx`, `src/app/(feed)/page.tsx`, `public/art/*.webp` (quality 90, under ~150 KB each).
+- No data, route or behavior change.
+
+**Check:** lint, typecheck, tests, build (separate `distDir`), a look at `/?topic=...` for all three and at `/sign-in` (desktop; phone if the window can be resized).
+
 ## Profile menu + /settings page (2026-11-16, APPROVED; owner chose A: delete a deleted person's comments)
 
 Owner: "we need more settings on profile button". Chosen in a question round: **all four** — edit profile, my membership, my activity, account safety — on **a `/settings` page**, with the avatar menu linking to it.
