@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { ClipScreen } from '@/components/clip-screen';
 import { CrtBox, type CrtBoxSize } from '@/components/crt-box';
 
 export type CrtScreen =
   | { kind: 'video'; videoId: string; title: string; thumbnailUrl: string }
+  | { kind: 'clip'; src: string; start: number }
   | { kind: 'static' | 'bars' | 'glow' };
 
 export type CrtSlot = {
@@ -24,7 +26,7 @@ export type CrtSlot = {
   antenna?: boolean;
 };
 
-const SCREEN_LOOK: Record<Exclude<CrtScreen['kind'], 'video'>, string> = {
+const SCREEN_LOOK: Record<'static' | 'bars' | 'glow', string> = {
   static: 'crt-static',
   bars: 'crt-bars',
   glow: 'crt-glow',
@@ -39,8 +41,9 @@ const ANTENNA_BASE: CrtBoxSize = { w: 18, h: 4.5, d: 13, y: -39.75 };
 
 /** One old TV on the feed's wall, built in CSS-3D. Screens with a video are links to it. */
 export function CrtTv({ slot, screen }: { slot: CrtSlot; screen: CrtScreen }) {
-  const picture =
-    screen.kind === 'video' ? (
+  let picture: React.ReactNode;
+  if (screen.kind === 'video') {
+    picture = (
       <Image
         src={screen.thumbnailUrl}
         alt=""
@@ -49,9 +52,12 @@ export function CrtTv({ slot, screen }: { slot: CrtSlot; screen: CrtScreen }) {
         sizes="20vw"
         className="object-cover saturate-[1.2]"
       />
-    ) : (
-      <div className={`absolute inset-0 ${SCREEN_LOOK[screen.kind]}`} />
     );
+  } else if (screen.kind === 'clip') {
+    picture = <ClipScreen src={screen.src} start={screen.start} />;
+  } else {
+    picture = <div className={`absolute inset-0 ${SCREEN_LOOK[screen.kind]}`} />;
+  }
 
   const tv = (
     <div className="crt-stage">

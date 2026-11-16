@@ -22,12 +22,20 @@ const RIGHT_SLOTS: CrtSlot[] = [
   { x: 28, y: 32, width: 20, blur: 2.5, tilt: 2, yaw: -36, pitch: 9 },
   { x: 30, y: 80, width: 26, blur: 1, tilt: 3, yaw: -28, pitch: 4, wood: true },
 ];
-// What the TVs without a video show.
+// What the TVs without a video show, one entry per TV. Three of them (on the bigger front sets)
+// play the same short clip, out of step.
+const CLIP = '/art/clip-trading.mp4';
 const FILLERS: CrtScreen[] = [
   { kind: 'static' },
-  { kind: 'static' },
+  { kind: 'clip', src: CLIP, start: 0 },
   { kind: 'bars' },
   { kind: 'glow' },
+  { kind: 'clip', src: CLIP, start: 0.4 },
+  { kind: 'static' },
+  { kind: 'clip', src: CLIP, start: 0.7 },
+  { kind: 'static' },
+  { kind: 'glow' },
+  { kind: 'bars' },
   { kind: 'static' },
   { kind: 'static' },
 ];
