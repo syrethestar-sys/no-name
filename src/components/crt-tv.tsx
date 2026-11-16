@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { CrtBox, type CrtBoxSize } from '@/components/crt-box';
 
 export type CrtScreen =
   | { kind: 'video'; videoId: string; title: string; thumbnailUrl: string }
@@ -14,6 +15,13 @@ export type CrtSlot = {
   blur: number;
   /** Small tilt so the stack looks piled up, in degrees. */
   tilt: number;
+  /** How far the TV is turned left/right and tipped forward, in degrees. */
+  yaw: number;
+  pitch: number;
+  /** Woodgrain cabinet instead of plastic. */
+  wood?: boolean;
+  /** Rabbit ears on top. */
+  antenna?: boolean;
 };
 
 const SCREEN_LOOK: Record<Exclude<CrtScreen['kind'], 'video'>, string> = {
@@ -22,7 +30,14 @@ const SCREEN_LOOK: Record<Exclude<CrtScreen['kind'], 'video'>, string> = {
   glow: 'crt-glow',
 };
 
-/** One old TV on the feed's wall. Screens with a video are links to it. */
+// The parts of the set, in percent of its width (the front is 100 wide and 75 high).
+const CABINET: CrtBoxSize = { w: 100, h: 75, d: 52 };
+// Two stepped blocks behind the cabinet make the tapered back of the picture tube.
+const TUBE_NEAR: CrtBoxSize = { w: 74, h: 58, d: 22, z: -37 };
+const TUBE_FAR: CrtBoxSize = { w: 50, h: 40, d: 26, z: -61 };
+const ANTENNA_BASE: CrtBoxSize = { w: 18, h: 4.5, d: 13, y: -39.75 };
+
+/** One old TV on the feed's wall, built in CSS-3D. Screens with a video are links to it. */
 export function CrtTv({ slot, screen }: { slot: CrtSlot; screen: CrtScreen }) {
   const picture =
     screen.kind === 'video' ? (
@@ -39,11 +54,44 @@ export function CrtTv({ slot, screen }: { slot: CrtSlot; screen: CrtScreen }) {
     );
 
   const tv = (
-    <div className="crt-case h-full w-full">
-      <div className="crt-screen h-full w-full">
-        {picture}
-        <div className="scanlines absolute inset-0" />
-        <div className="crt-glass absolute inset-0" />
+    <div className="crt-stage">
+      <div
+        className="crt-body"
+        data-style={slot.wood ? 'wood' : 'plastic'}
+        style={{ '--yaw': `${slot.yaw}deg`, '--pitch': `${slot.pitch}deg` } as React.CSSProperties}
+      >
+        <CrtBox size={TUBE_FAR} className="crt-hood" />
+        <CrtBox size={TUBE_NEAR} className="crt-hood" />
+        <CrtBox size={CABINET} className="crt-cabinet">
+          <div className="crt-well" />
+          <div className="crt-screen">
+            {picture}
+            <div className="scanlines absolute inset-0" />
+            <div className="crt-sheen absolute inset-0" />
+          </div>
+          <div className="crt-controls">
+            <div
+              className="crt-knob"
+              style={{ top: '4cqw', '--turn': '35deg' } as React.CSSProperties}
+            />
+            <div
+              className="crt-knob"
+              style={{ top: '17cqw', '--turn': '-50deg' } as React.CSSProperties}
+            />
+            <div className="crt-grille" />
+            <div className="crt-led" />
+          </div>
+          <div className="crt-plate" />
+        </CrtBox>
+        {slot.antenna && (
+          <>
+            <CrtBox size={ANTENNA_BASE} className="crt-hood" />
+            <div className="crt-rods">
+              <div className="crt-rod" />
+              <div className="crt-rod" />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
