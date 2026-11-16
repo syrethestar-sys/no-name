@@ -3,8 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-// More tabs (membership, activity, safety) are added here as their pages arrive.
-const TABS = [{ href: '/settings/profile', label: 'Profile' }] as const;
+// More tabs (safety) are added here as their pages arrive.
+const TABS = [
+  { href: '/settings/profile', label: 'Profile' },
+  { href: '/settings/membership', label: 'Membership' },
+  { href: '/settings/activity', label: 'Activity' },
+] as const;
 
 /** The settings sections: a column on wide screens, a scrolling row on phones. */
 export function SettingsTabs() {
