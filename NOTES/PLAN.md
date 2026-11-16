@@ -578,3 +578,17 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 **Check:** lint, typecheck, tests, build (separate `distDir`, see the handoff), a look at the empty feed at desktop and phone width, reduced motion shows the still, and one request for the clip in the network tab. The feed only shows this banner when there are no videos, so I need the empty state to appear (a temporary filter that matches nothing, nothing committed).
 
 **Owner (2026-11-16): OK.** Play once and hold the last frame (the default above).
+
+## Database client recovers from dropped connections (2026-11-16, WAITING for owner OK)
+
+**Problem:** at about 20:20 the dev server (up since 19:34) stopped finishing every page that reads the database: the page shell arrived in 0.1 s, then nothing, for 60 s. The Supabase project was healthy (no locks, all sessions idle, a direct query and a fresh pooler connection answered in about 1 s), the process was idle, and a restart fixed it. Most likely cause (**not proven**, the old server's log is gone): `src/db/index.ts` keeps one `postgres` client for the life of the process, and the pooler dropped connections that the client still thought were open. The library defaults make that easy: `idle_timeout` is off (idle connections are never closed), `connect_timeout` is 30 s, and a query has no time limit. Production would have the same weakness (one long-lived client per server instance).
+
+**Fix (3 options, one file):** in `getDb()` pass `postgres(databaseUrl, { prepare: false, idle_timeout: 20, connect_timeout: 10, max_lifetime: 1800 })`.
+- `idle_timeout: 20`: a connection idle for 20 s is closed, so a connection the pooler dropped in a quiet period is never reused; the next query opens a fresh one (about 1 s, as measured).
+- `connect_timeout: 10`: a stuck connect fails after 10 s (the page's existing try/catch then shows "Could not load videos. Refresh to try again.") instead of waiting 30 s.
+- `max_lifetime: 1800`: the library's own default is 30 to 60 minutes; made explicit so it is visible.
+- A short comment says why. No other file changes.
+
+**Not in this fix:** a per-query time limit. `postgres` has none of its own, and sending `statement_timeout` as a startup option may be refused by the Supabase transaction pooler (port 6543), so I would not guess; if the hang comes back with these options, that is the next step (test it against the pooler first).
+
+**Check:** lint, typecheck, tests, build; open the home page twice 30 s apart (the second call must reconnect and answer, not hang). I cannot reproduce the original dropped-connection state on demand, so this PR **reduces the chance of the hang but is not proven to fix it**; the PR body will say so.
