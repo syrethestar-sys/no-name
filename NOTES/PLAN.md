@@ -566,6 +566,35 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 
 **As built (2026-11-16):** five stacked PRs instead of four: #47 shell + Profile, #48 Membership + Activity, #49 Account safety with Email, #50 Devices + our own "Confirm it's you" dialog, #51 Delete account. Changes from the plan above: (1) Clerk demands a fresh check (`session_reverification_required`) before signing another device out, so there is a re-verification dialog of our own (emailed code; `useConfirmedAction` hook) used by Devices and Delete account; (2) `DELETE /api/me` also demands `has({ reverification: 'strict' })` on the server; (3) the owner-only menu links (Upload, Members) were not repeated in the avatar menu because the header already has them; (4) the plan's "check delete / multi-session in the Clerk dashboard" turned out unnecessary: everything worked on the dev instance as it is. The re-verification dialog only handles the email-code factor; a Google-only account sees "sign out, sign in again, retry". Not built: phone layout checks, MFA.
 
+## Animated empty state — `clip-static-tv` (2026-11-16, APPROVED)
+
+**What:** the "no videos yet" banner on the feed plays the Higgsfield clip `clip-static-tv.mp4` (a whole old TV in a room, 864x496, about 0.76 MB, silent) instead of the still `empty-no-videos.webp`. It is the banner the clip was made for: the picture already shows one TV in a room.
+- `EmptyState` gets an optional `clip` (a path in `public/art/`). With a clip, a small client component `EmptyClip` renders a `muted playsInline autoPlay` video over the still. The still is the `poster` and the first thing painted, so there is no empty flash while the file loads and nothing changes if the video fails.
+- `prefers-reduced-motion`: no video is mounted; the still stays (same pattern as `ClipScreen`).
+- Same crop as now (`object-cover`, same `objectPosition`), so the banner height and the text under it do not move.
+- The clip does not loop seamlessly. **Default: play once and hold the last frame** (no visible jump). If the last frame looks wrong next to the still, fall back to `loop` and accept the jump, as on the wall.
+- The file is copied from `E:\Work\no-name-art\` into `public/art/`. Nothing from Higgsfield is called at runtime.
+- Search "Nothing found" keeps its still (the clip does not fit that message).
+- About 40 lines of code (`empty-state.tsx` edit + `empty-clip.tsx`); the mp4 is listed in the PR description.
+
+**Check:** lint, typecheck, tests, build (separate `distDir`, see the handoff), a look at the empty feed at desktop and phone width, reduced motion shows the still, and one request for the clip in the network tab. The feed only shows this banner when there are no videos, so I need the empty state to appear (a temporary filter that matches nothing, nothing committed).
+
+**Owner (2026-11-16): OK.** Play once and hold the last frame (the default above).
+
+## Database client recovers from dropped connections (2026-11-16, APPROVED: owner "ok")
+
+**Problem:** at about 20:20 the dev server (up since 19:34) stopped finishing every page that reads the database: the page shell arrived in 0.1 s, then nothing, for 60 s. The Supabase project was healthy (no locks, all sessions idle, a direct query and a fresh pooler connection answered in about 1 s), the process was idle, and a restart fixed it. Most likely cause (**not proven**, the old server's log is gone): `src/db/index.ts` keeps one `postgres` client for the life of the process, and the pooler dropped connections that the client still thought were open. The library defaults make that easy: `idle_timeout` is off (idle connections are never closed), `connect_timeout` is 30 s, and a query has no time limit. Production would have the same weakness (one long-lived client per server instance).
+
+**Fix (3 options, one file):** in `getDb()` pass `postgres(databaseUrl, { prepare: false, idle_timeout: 20, connect_timeout: 10, max_lifetime: 1800 })`.
+- `idle_timeout: 20`: a connection idle for 20 s is closed, so a connection the pooler dropped in a quiet period is never reused; the next query opens a fresh one (about 1 s, as measured).
+- `connect_timeout: 10`: a stuck connect fails after 10 s (the page's existing try/catch then shows "Could not load videos. Refresh to try again.") instead of waiting 30 s.
+- `max_lifetime: 1800`: the library's own default is 30 to 60 minutes; made explicit so it is visible.
+- A short comment says why. No other file changes.
+
+**Not in this fix:** a per-query time limit. `postgres` has none of its own, and sending `statement_timeout` as a startup option may be refused by the Supabase transaction pooler (port 6543), so I would not guess; if the hang comes back with these options, that is the next step (test it against the pooler first).
+
+**Check:** lint, typecheck, tests, build; open the home page twice 30 s apart (the second call must reconnect and answer, not hang). I cannot reproduce the original dropped-connection state on demand, so this PR **reduces the chance of the hang but is not proven to fix it**; the PR body will say so.
+
 ## Settings phone fixes (2026-11-16, APPROVED: owner "fix")
 
 Found by a phone-width (390 px) check of the settings stack tip with a signed-in test user. No page scrolled sideways; two small problems:

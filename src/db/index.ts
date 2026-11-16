@@ -16,7 +16,14 @@ export function getDb(): Database {
   if (!databaseUrl) throw new Error('DATABASE_URL is not set. See .env.example.');
 
   // Supabase transaction pooler (port 6543) does not support prepared statements.
-  const client = postgres(databaseUrl, { prepare: false });
+  // Idle connections close after 20 s so one the pooler dropped is never reused (that once made
+  // every page hang); a stuck connect gives up after 10 s so the page can show its error.
+  const client = postgres(databaseUrl, {
+    prepare: false,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    max_lifetime: 1800,
+  });
   globalForDb.database = drizzle(client, { schema });
   return globalForDb.database;
 }
