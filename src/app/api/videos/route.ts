@@ -33,6 +33,8 @@ const Body = z
       .max(24 * 60 * 60)
       .nullable(),
     visibility: z.enum(['public', 'members']).default('members'),
+    /** Where the browser put the video file (ignored for a YouTube link). */
+    storageProvider: z.enum(['supabase', 'r2']).default('supabase'),
     topic: z.enum(['trading', 'coding', 'life']).default('life'),
   })
   .refine(hasOneVideoSource);
@@ -64,6 +66,7 @@ export async function POST(request: Request) {
     durationSeconds,
     visibility,
     topic,
+    storageProvider,
   } = parsed.data;
   if (youtubeId && (await checkYoutubeVideo(youtubeId)) === 'unavailable') {
     return Response.json(
@@ -84,7 +87,7 @@ export async function POST(request: Request) {
         // A YouTube video has no file of ours; its id is all we keep.
         ...(youtubeId
           ? { storageProvider: 'youtube' as const, storagePath: null, youtubeId }
-          : { storagePath: videoPath }),
+          : { storageProvider, storagePath: videoPath }),
         thumbnailPath,
         audioPath,
         durationSeconds,

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { formatDate, formatDuration, formatRating, formatTimeAgo } from '@/lib/format';
+import {
+  formatDate,
+  formatDuration,
+  formatFileSize,
+  formatRating,
+  formatTimeAgo,
+} from '@/lib/format';
 
 describe('formatDuration', () => {
   it('shows minutes and seconds, adding hours only when needed', () => {
@@ -41,5 +47,17 @@ describe('formatTimeAgo', () => {
     expect(ago(5 * 60)).toBe('5 minutes ago');
     expect(ago(3 * 86_400)).toBe('3 days ago');
     expect(ago(400 * 86_400)).toBe('1 year ago');
+  });
+});
+
+describe('formatFileSize', () => {
+  it('shows MB below 1 GB, rounded', () => {
+    expect(formatFileSize(50_000_000)).toBe('50 MB');
+    expect(formatFileSize(1_400_000)).toBe('1 MB');
+  });
+
+  it('shows GB from 1 GB, one decimal at most', () => {
+    expect(formatFileSize(2_000_000_000)).toBe('2 GB');
+    expect(formatFileSize(1_250_000_000)).toBe('1.3 GB');
   });
 });

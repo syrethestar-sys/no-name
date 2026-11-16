@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { PageHeading } from '@/components/page-heading';
 import { UploadTabs } from '@/components/upload-tabs';
 import { isAdmin } from '@/lib/auth';
+import { uploadTarget } from '@/lib/stored-video';
 
 export const metadata = { title: 'Upload · Experience Community' };
 
@@ -15,7 +16,7 @@ export default async function UploadPage() {
         is taken from the first second.
       </PageHeading>
       <div className="glass-panel mt-8 p-6">
-        <UploadTabs />
+        <UploadTabs maxBytes={uploadTarget().maxBytes} />
       </div>
     </main>
   );

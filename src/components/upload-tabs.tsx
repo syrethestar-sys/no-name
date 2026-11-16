@@ -10,8 +10,11 @@ const MODES = [
   { id: 'youtube', label: 'YouTube link' },
 ] as const;
 
-/** Where the video lives: a file uploaded here, or an Unlisted YouTube video. */
-export function UploadTabs() {
+/**
+ * Where the video lives: a file uploaded here, or an Unlisted YouTube video.
+ * `maxBytes` is the file size limit of the storage new uploads go to.
+ */
+export function UploadTabs({ maxBytes }: { maxBytes: number }) {
   const [mode, setMode] = useState<(typeof MODES)[number]['id']>('file');
 
   return (
@@ -30,7 +33,7 @@ export function UploadTabs() {
           </Button>
         ))}
       </div>
-      {mode === 'file' ? <UploadForm /> : <YoutubeUploadForm />}
+      {mode === 'file' ? <UploadForm maxBytes={maxBytes} /> : <YoutubeUploadForm />}
     </div>
   );
 }
