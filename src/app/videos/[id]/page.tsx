@@ -81,7 +81,7 @@ export default async function VideoPage({ params, searchParams }: VideoPageProps
             )}
             {/* Brackets fade while the cursor is on the player, so they never cover controls. */}
             <div className="transition-opacity duration-300 group-hover/player:opacity-0">
-              <ViewfinderCorners label="PLAY" />
+              <ViewfinderCorners label={video.youtubeId ? undefined : 'PLAY'} />
             </div>
           </div>
         ) : (
