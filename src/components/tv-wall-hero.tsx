@@ -5,21 +5,22 @@ import { Button } from '@/components/ui/button';
 import type { VideoCardData } from '@/lib/videos';
 
 // Where the TVs stand in each half of the room (percent of the cluster box), front to back.
+// yaw/pitch turn each set in 3D (left ones face right, right ones face left, toward the middle).
 const LEFT_SLOTS: CrtSlot[] = [
-  { x: 4, y: 12, width: 46, blur: 0, tilt: -2 },
-  { x: 40, y: 50, width: 36, blur: 0.5, tilt: 1 },
-  { x: 2, y: 54, width: 32, blur: 1, tilt: 3 },
-  { x: 56, y: 20, width: 22, blur: 1.5, tilt: -1 },
-  { x: 22, y: 82, width: 26, blur: 1, tilt: -3 },
-  { x: 60, y: 0, width: 18, blur: 2.5, tilt: 2 },
+  { x: 4, y: 16, width: 42, blur: 0, tilt: -2, yaw: 24, pitch: 8, antenna: true },
+  { x: 40, y: 52, width: 34, blur: 0.5, tilt: 1, yaw: 32, pitch: 10, wood: true },
+  { x: 2, y: 58, width: 30, blur: 1, tilt: 3, yaw: 18, pitch: 6 },
+  { x: 56, y: 22, width: 22, blur: 1.5, tilt: -1, yaw: 36, pitch: 9, wood: true },
+  { x: 22, y: 82, width: 26, blur: 1, tilt: -3, yaw: 28, pitch: 4 },
+  { x: 60, y: 2, width: 18, blur: 2.5, tilt: 2, yaw: 30, pitch: 12 },
 ];
 const RIGHT_SLOTS: CrtSlot[] = [
-  { x: 50, y: 8, width: 46, blur: 0, tilt: 2 },
-  { x: 6, y: 46, width: 36, blur: 0.5, tilt: -2 },
-  { x: 54, y: 52, width: 40, blur: 0, tilt: 1 },
-  { x: 22, y: 4, width: 24, blur: 1.5, tilt: -1 },
-  { x: 28, y: 30, width: 20, blur: 2.5, tilt: 2 },
-  { x: 30, y: 80, width: 26, blur: 1, tilt: 3 },
+  { x: 50, y: 12, width: 42, blur: 0, tilt: 2, yaw: -24, pitch: 8, wood: true, antenna: true },
+  { x: 8, y: 48, width: 34, blur: 0.5, tilt: -2, yaw: -32, pitch: 10 },
+  { x: 54, y: 54, width: 38, blur: 0, tilt: 1, yaw: -20, pitch: 6 },
+  { x: 22, y: 6, width: 24, blur: 1.5, tilt: -1, yaw: -34, pitch: 11, wood: true },
+  { x: 28, y: 32, width: 20, blur: 2.5, tilt: 2, yaw: -36, pitch: 9 },
+  { x: 30, y: 80, width: 26, blur: 1, tilt: 3, yaw: -28, pitch: 4, wood: true },
 ];
 // What the TVs without a video show.
 const FILLERS: CrtScreen[] = [

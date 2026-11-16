@@ -503,3 +503,24 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 3. If the stills don't look right after the first batch, stop and re-plan instead of spending the rest of the credits.
 
 **Done when:** the owner has approved a set of stills and a clip (or decided to stop), the balance is logged in the handoff note, and a follow-up PR wires approved files into the front page and the empty states.
+
+## Real 3D TVs on the wall (2026-11-16, built while the owner slept)
+
+**Owner (2026-11-16, going to sleep, "continue without asking me … i need the tv's look like real 3d old tv"):** this was taken as the OK to build. Rule 1 still holds in spirit: the work stays in an **open PR that is not merged**, so the owner reviews it first. Nothing else on `main` changes.
+
+**Problem:** today each TV is a flat rounded rectangle with a glow. It has no depth, so it does not read as an old television.
+
+**Fix, CSS only (no WebGL, same decision as the Codescan plan):** every TV becomes a small 3D object built from CSS-3D boxes (`transform-style: preserve-3d`), so its sides, top and rear are really there and change with the viewing angle and with the wall's mouse drift.
+- **Cabinet:** a box (front, top, two sides) with a lit front bezel, a recessed glass screen, and a control column (two ridged knobs, a speaker grille, a small power light).
+- **Tube housing:** two smaller boxes stepped behind the cabinet, so the back tapers like a CRT.
+- **Antenna** (rabbit ears) on some TVs; **plastic or woodgrain** cabinet per TV.
+- **Light:** face shading (top lightest, sides darker, back darkest) and a specular streak on the glass. The screen sits slightly proud of the bezel, so it shifts against it as the TV turns (parallax).
+- Each TV has its own yaw/pitch, turned toward the room's middle. On hover it turns to face you (the existing hover zoom and "rack focus" blur stay).
+- Own `perspective` per TV, sized in `cqw` so a big front TV and a small far one have the same shape.
+- Colors are tokens in `globals.css` (`--crt-plastic*`, `--crt-wood*`, `--crt-metal`), none in components.
+- Files: `src/components/crt-tv.tsx` (rewritten), new `src/app/crt-tv.css` (imported by `globals.css`), slot data in `tv-wall-hero.tsx`. Old `crt-case`, `crt-screen` utilities removed. No data, route or behavior change.
+- Reduced motion: the static animation is already off; the hover turn is a short transition only.
+
+**Check:** lint, typecheck, tests, build; screenshots at desktop and phone width; look at the hover state; confirm the wall still reads well under the title (the middle stays dark).
+
+**Not in this PR:** Higgsfield stills or clips on the screens (their own plan above).

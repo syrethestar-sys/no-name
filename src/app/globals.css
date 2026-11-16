@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import './crt-tv.css';
 
 /*
  * Design tokens. The site is dark-only. Components use these through Tailwind
@@ -10,7 +11,7 @@
  *   muted-foreground  quiet text      destructive  delete / errors
  *   glass       borderless card tint (getlayers-style), glass-hover on hover
  *   glass-edge  faint top highlight on chips   thumb  empty thumbnail
- *   rec         the viewfinder's recording dot   crt-body  the TV cases on the feed's wall
+ *   rec         the viewfinder's recording dot   crt-*  the old TVs on the feed's wall (crt-tv.css)
  * Look: a camcorder viewfinder (see NOTES/PLAN.md, "Viewfinder redesign").
  */
 :root {
@@ -39,6 +40,12 @@
   --thumb: #111516;
   --rec: #ff4d4d;
   --crt-body: #0b0e0f;
+  --crt-plastic-hi: #3d4548;
+  --crt-plastic: #262c2e;
+  --crt-plastic-lo: #14181a;
+  --crt-wood: #7a5334;
+  --crt-wood-lo: #3b2718;
+  --crt-metal: #a9b2b3;
 }
 
 @theme inline {
@@ -169,33 +176,6 @@
     #d25fcf 0 71.4%,
     #d9615c 0 85.7%,
     #5b62d6 0
-  );
-}
-
-/* The TV case and its curved, glowing screen. */
-@utility crt-case {
-  border-radius: 10% / 13%;
-  background-color: var(--crt-body);
-  padding: 6%;
-  box-shadow:
-    0 24px 48px -12px rgb(0 0 0 / 0.9),
-    inset 0 0 0 1px rgb(255 255 255 / 0.06);
-}
-
-@utility crt-screen {
-  position: relative;
-  overflow: hidden;
-  border-radius: 12% / 16%;
-  box-shadow: 0 0 36px -6px rgb(255 255 255 / 0.35);
-}
-
-/* Curved glass: light on the top-left, dark toward the edges. */
-@utility crt-glass {
-  background: radial-gradient(
-    120% 90% at 30% 20%,
-    rgb(255 255 255 / 0.18),
-    transparent 45%,
-    rgb(0 0 0 / 0.45) 100%
   );
 }
 
