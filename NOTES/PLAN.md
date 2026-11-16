@@ -524,3 +524,14 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 **Check:** lint, typecheck, tests, build; screenshots at desktop and phone width; look at the hover state; confirm the wall still reads well under the title (the middle stays dark).
 
 **Not in this PR:** Higgsfield stills or clips on the screens (their own plan above).
+
+## TV-wall clip (2026-11-16, step from the Visual assets plan; owner: "do next")
+
+**What:** three of the wall's filler TVs play the short Higgsfield clip `clip-trading.mp4` (864x496, about 0.76 MB, silent) instead of static, bars or a glow. The other fillers stay as they are.
+- `CrtScreen` gets a `clip` kind (`src`, `start` as a 0–1 fraction of the clip). A small client component `ClipScreen` renders a `muted loop playsInline autoPlay` video and jumps to its `start` once the length is known, so the three screens are not in step.
+- `prefers-reduced-motion`: no video is mounted; the screen shows the old glow instead. The clip loops with a visible jump (it does not loop seamlessly); accepted.
+- Only three clips at once, and the same file, so the browser downloads it once.
+- The file goes in `public/art/` (copied from `E:\Work\no-name-art\`). Nothing from Higgsfield is called at runtime.
+- Not in this PR: the `clip-static-tv` animated empty state, topic covers, sign-in backdrop.
+
+**Check:** lint, typecheck, tests, build (with a separate `distDir`, see the handoff), a look at the wall, and the network tab: one request for the clip.
