@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { unstable_rethrow } from 'next/navigation';
+import { EmptyState } from '@/components/empty-state';
 import { FilterMenu, type FilterOption } from '@/components/feed-filter';
 import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
@@ -111,7 +112,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       )}
 
       {!loadFailed && videos.length === 0 && (
-        <div className="mt-10 rounded-xl border border-dashed p-12 text-center">
+        <EmptyState picture="no-videos">
           <p className="text-muted-foreground">
             {topic ? 'No videos on this topic yet.' : 'No videos yet.'}
           </p>
@@ -120,7 +121,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
               Upload a video
             </Button>
           )}
-        </div>
+        </EmptyState>
       )}
 
       {featuredVideo && (

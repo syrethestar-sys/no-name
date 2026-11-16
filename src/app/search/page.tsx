@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { unstable_rethrow } from 'next/navigation';
 import { SearchIcon } from 'lucide-react';
+import { EmptyState } from '@/components/empty-state';
 import { PageHeading } from '@/components/page-heading';
 import { VideoCard } from '@/components/video-card';
 import { Input } from '@/components/ui/input';
@@ -64,7 +65,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       )}
 
       {outcome && outcome.results.length === 0 && (
-        <p className="mt-10 text-muted-foreground">Nothing found. Try other words.</p>
+        <EmptyState picture="no-results">
+          <p className="text-muted-foreground">Nothing found. Try other words.</p>
+        </EmptyState>
       )}
 
       {outcome && outcome.results.length > 0 && (
