@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useClerk, useUser } from '@clerk/nextjs';
-import { ActivityIcon, IdCardIcon, LogOutIcon, UserRoundIcon } from 'lucide-react';
+import { ActivityIcon, IdCardIcon, LogOutIcon, ShieldCheckIcon, UserRoundIcon } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -20,6 +20,7 @@ const MENU_LINKS = [
   { href: '/settings/profile', label: 'Profile', icon: UserRoundIcon },
   { href: '/settings/membership', label: 'Membership', icon: IdCardIcon },
   { href: '/settings/activity', label: 'Activity', icon: ActivityIcon },
+  { href: '/settings/safety', label: 'Account safety', icon: ShieldCheckIcon },
 ];
 
 /** Our replacement for Clerk's UserButton: avatar, who you are, settings links, sign out. */
