@@ -437,3 +437,37 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 - A "Reset" item at the bottom when a filter is on.
 - Files: new `src/components/feed-filter.tsx`; remove `topic-chips.tsx` + `sort-chips.tsx`; update `(feed)/page.tsx`. No server or DB change.
 - Check: lint, typecheck, tests; screenshots wide + phone; keyboard (Tab, Enter, Esc) works.
+
+## YouTube plan — link-only (Unlisted) videos streamed from YouTube (2026-11-16, approved)
+
+**Why:** the owner wants to save storage by hosting video on YouTube instead of paying for our own. Visibility is **Unlisted** (link only), not Public and not Private.
+
+**Honest limit:** Unlisted is not private. Anyone who has the video ID can watch it, and a signed-in member can copy the ID from the player. So YouTube videos are protected only by "we don't show the ID to people who may not see it". A leaked ID means a leaked video. This is fine for public videos. For members-only videos it is a risk the owner accepts. Paid videos (Phase 9b) should stay on R2.
+
+**What changes:**
+- `videos.storage_provider` gets a third value, `youtube`. New nullable column `videos.youtube_id` (migration). R2 and Supabase rows keep working, so a video picks its own home.
+- The video page shows a YouTube player (`youtube-nocookie.com` embed) instead of a signed file link. The server puts `youtube_id` in the page **only** for viewers who may watch, exactly where a signed link is made today. A guest on a members-only video gets the locked card with no ID.
+- Thumbnails stay in our Supabase bucket (not YouTube's public thumbnail address), so a locked card never carries the ID.
+- Transcripts, search and "related videos" are unchanged. The browser still pulls the speech audio out of the local file (Mediabunny), so Groq gets `audio/<id>.webm`. The video file itself is not uploaded to us.
+- A small `src/lib/youtube.ts` turns any pasted YouTube link (watch, youtu.be, shorts) into the 11-character ID, checked with zod. Unit-tested.
+- Delete removes our row, audio and thumbnail. It **cannot** delete the YouTube video: the owner does that in YouTube Studio. The delete dialog says so.
+
+**Upload (my recommendation: paste a link, no YouTube API):**
+1. The owner uploads the video in YouTube Studio, sets visibility to **Unlisted**, and leaves "Allow embedding" on.
+2. On `/upload` the owner picks the same file (for audio, length and thumbnail in the browser) and pastes the YouTube link.
+3. We save the row. n8n transcribes from the audio as now.
+- Why not upload through the YouTube API: it needs a Google OAuth flow, and, as I understand it, a low daily quota and a Google review before uploads can be anything but Private. I'd check this before choosing it. It can come later as its own plan.
+
+**Limits and costs:**
+- Storage and bandwidth cost nothing. YouTube may show ads, end-screen suggestions (`rel=0` keeps them to our channel) and its own controls. The camcorder look stays around the player, not on its buttons.
+- If YouTube removes or blocks a video, the page shows a friendly "unavailable" message.
+- Extra Google/YouTube rules apply to our content (copyright claims, takedowns).
+
+**Open questions (owner decides):**
+1. **Which videos use YouTube?** The owner picks per upload, with R2 kept for paid and sensitive ones. **Owner answer (2026-11-16): per upload.**
+2. **Members-only on YouTube:** OK with the leak risk above? **Owner answer (2026-11-16): yes, the leak risk is OK.**
+3. **Paste a link** or build API upload? **Owner answer (2026-11-16): paste a link.**
+
+**PRs:** (1) migration, `youtube.ts` + tests, server-gated YouTube player on the video page; (2) `/upload` paste-link mode and delete wording. Each under 300 lines.
+
+**Done when:** the owner pastes an Unlisted link, the video plays on `/videos/[id]` for allowed viewers only, a guest on a members-only video gets no ID in the page source, a transcript appears, and `/search` finds it.
