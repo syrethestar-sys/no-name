@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { CommentBody, JoinRequestBody, RatingBody, TranscribeBody } from '@/lib/request-schemas';
+import {
+  CommentBody,
+  hasOneVideoSource,
+  JoinRequestBody,
+  RatingBody,
+  TranscribeBody,
+  YoutubeLink,
+} from '@/lib/request-schemas';
 
 const UUID = '0bbd71b0-eba2-4335-851b-0f54b778ff30';
 
@@ -60,5 +67,29 @@ describe('TranscribeBody', () => {
     for (const audioPath of badPaths) {
       expect(TranscribeBody.safeParse({ audioPath }).success).toBe(false);
     }
+  });
+});
+
+describe('YoutubeLink', () => {
+  it('turns a pasted link into the video id', () => {
+    expect(YoutubeLink.parse('  https://youtu.be/q-zNoks1rFE?si=x ')).toBe('q-zNoks1rFE');
+    expect(YoutubeLink.parse('https://www.youtube.com/watch?v=q-zNoks1rFE')).toBe('q-zNoks1rFE');
+  });
+
+  it('rejects anything that is not a YouTube video link', () => {
+    for (const value of ['', 'hello', 'https://vimeo.com/123456789', 'https://youtu.be/short']) {
+      expect(YoutubeLink.safeParse(value).success).toBe(false);
+    }
+  });
+});
+
+describe('hasOneVideoSource', () => {
+  it('needs a file or a YouTube link, exactly one', () => {
+    expect(hasOneVideoSource({ videoPath: `videos/${UUID}.mp4` })).toBe(true);
+    expect(hasOneVideoSource({ youtubeUrl: 'q-zNoks1rFE' })).toBe(true);
+    expect(hasOneVideoSource({})).toBe(false);
+    expect(hasOneVideoSource({ videoPath: `videos/${UUID}.mp4`, youtubeUrl: 'q-zNoks1rFE' })).toBe(
+      false,
+    );
   });
 });
