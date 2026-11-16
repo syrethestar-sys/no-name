@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/empty-state';
 import { FilterMenu, type FilterOption } from '@/components/feed-filter';
 import { FeaturedVideo } from '@/components/featured-video';
 import { PageHeading } from '@/components/page-heading';
+import { TopicBanner } from '@/components/topic-banner';
 import { TvWallHero } from '@/components/tv-wall-hero';
 import { Button } from '@/components/ui/button';
 import { VideoCard } from '@/components/video-card';
@@ -94,6 +95,8 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           watchHref={featuredVideo ? `/videos/${featuredVideo.id}` : '#videos'}
           showJoin={showJoin}
         />
+      ) : topic ? (
+        <TopicBanner topic={topic} eyebrow={eyebrow} />
       ) : (
         <PageHeading title="Experiences" eyebrow={eyebrow}>
           Work, life, trading and code — shared with people who grow together.
