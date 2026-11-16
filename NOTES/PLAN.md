@@ -579,7 +579,7 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 
 **Owner (2026-11-16): OK.** Play once and hold the last frame (the default above).
 
-## Database client recovers from dropped connections (2026-11-16, WAITING for owner OK)
+## Database client recovers from dropped connections (2026-11-16, APPROVED: owner "ok")
 
 **Problem:** at about 20:20 the dev server (up since 19:34) stopped finishing every page that reads the database: the page shell arrived in 0.1 s, then nothing, for 60 s. The Supabase project was healthy (no locks, all sessions idle, a direct query and a fresh pooler connection answered in about 1 s), the process was idle, and a restart fixed it. Most likely cause (**not proven**, the old server's log is gone): `src/db/index.ts` keeps one `postgres` client for the life of the process, and the pooler dropped connections that the client still thought were open. The library defaults make that easy: `idle_timeout` is off (idle connections are never closed), `connect_timeout` is 30 s, and a query has no time limit. Production would have the same weakness (one long-lived client per server instance).
 
