@@ -535,3 +535,82 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 - Not in this PR: the `clip-static-tv` animated empty state, topic covers, sign-in backdrop.
 
 **Check:** lint, typecheck, tests, build (with a separate `distDir`, see the handoff), a look at the wall, and the network tab: one request for the clip.
+
+## Topic covers and sign-in backdrop (2026-11-16, step from the Visual assets plan; owner: "yes do that")
+
+Owner left the placement to me. Chosen, all site chrome (generated art never stands in for a video's own thumbnail):
+- **Topic cover banner:** on the feed, when a topic is picked (`/?topic=trading|coding|life`), the plain heading becomes a wide cover banner (`topic-trading|coding|life` stills, `webp`) with the same `PageHeading` over a dark gradient, plus one short line per topic. The front page (TV wall) and sort-only views are unchanged. New `TopicBanner` component; the cover files live in `public/art/`.
+- **Sign-in backdrop:** `backdrop-02` (the room of glowing TVs, no brackets) fills the sign-in page behind the glass card, dimmed with a gradient so the form stays readable. `/join` is not changed: it has a long left-aligned text block that would fight the picture.
+- Files: `src/components/topic-banner.tsx`, `src/components/page-backdrop.tsx`, `src/app/sign-in/page.tsx`, `src/app/(feed)/page.tsx`, `public/art/*.webp` (quality 90, under ~150 KB each).
+- No data, route or behavior change.
+
+**Check:** lint, typecheck, tests, build (separate `distDir`), a look at `/?topic=...` for all three and at `/sign-in` (desktop; phone if the window can be resized).
+
+## Profile menu + /settings page (2026-11-16, APPROVED; owner chose A: delete a deleted person's comments)
+
+Owner: "we need more settings on profile button". Chosen in a question round: **all four** — edit profile, my membership, my activity, account safety — on **a `/settings` page**, with the avatar menu linking to it.
+
+**Menu (`AccountMenu`):** Profile · Membership · Activity · (owner only: Upload, Members) · Sign out. Each link opens `/settings/<tab>`.
+
+**`/settings` page:** signed-in only (guests are sent to `/sign-in?redirect_url=/settings`). Left tab list, content on the right; on a phone the tabs sit on top. Same `PageHeading` + glass panels. Tabs are real routes (`/settings/profile`, `/membership`, `/activity`, `/safety`) so links and back button work.
+
+1. **Profile** — change first/last name and photo. Built with Clerk's `useUser()` (`user.update`, `user.setProfileImage`), our own form (no Clerk widget). Photo: jpg/png/webp up to 5 MB, previewed before saving. Friendly errors ("Could not save. Try again.").
+2. **Membership** — read-only status from our DB: member / request pending / not a member (with the "Join" link) / rejected with the date you can apply again. Owner sees "You are the owner" with shortcuts to Upload and Members.
+3. **Activity** — three lists (first 30 each, newest first): videos you liked, your ratings (stars), your comments (text + the video it is on). Each links to the video. Videos you can no longer watch (members-only, you are not a member) show as a locked row without a title link. Server component, plain SQL joins, no new tables.
+4. **Account safety** (Clerk):
+   - **Email:** add a new email with a 6-digit code, make it primary, remove an old one.
+   - **Devices:** list of signed-in sessions (browser, last active) with "Sign out" on each, plus "Sign out everywhere else".
+   - **Delete account:** a confirm dialog where you type `DELETE`. `DELETE /api/me` (signed-in only, zod): **first** removes your rows in our database (`likes`, `ratings`, `comments`, `members`), **then** deletes the Clerk user on the server, then the browser signs out. DB first, so a failed Clerk call can simply be retried and nothing half-deleted is left behind. **The owner account cannot delete itself** (the button explains why), so the site can never lose its admin by a mis-click.
+
+**Needs from the owner (Clerk dashboard):** User & Authentication → turn on **email** as an allowed identifier for adding addresses (it already is, sign-in uses email codes), and check the **delete account** and **multi-session / device** features are allowed. I will verify with a test account first and report if any is off.
+
+**Decision for the owner — what happens to a deleted person's comments?**
+- **A (recommended): delete them all.** Cleanest for privacy. A top-level comment takes its replies with it (the DB already works that way), so other people's replies under it disappear too.
+- **B: keep the text, show "Deleted member".** Nobody's replies vanish, but the person's words stay on the site.
+
+**PRs (each under 300 lines):** (1) `/settings` shell + menu links + Profile; (2) Membership + Activity; (3) Safety: email, devices; (4) Delete account (`/api/me`, with tests for the DB cleanup order and the owner block).
+
+**Done when:** the menu opens every tab; a name/photo change shows in the menu and on comments after a refresh; membership and activity match the database; a second email can be added and made primary; another device can be signed out; deleting a test account removes its likes, ratings, comments and member row and the Clerk user, and the owner's delete button is disabled.
+
+**Not in this plan:** notification settings (no emails are sent yet), theme (the site is dark-only), username, two-step login.
+
+**As built (2026-11-16):** five stacked PRs instead of four: #47 shell + Profile, #48 Membership + Activity, #49 Account safety with Email, #50 Devices + our own "Confirm it's you" dialog, #51 Delete account. Changes from the plan above: (1) Clerk demands a fresh check (`session_reverification_required`) before signing another device out, so there is a re-verification dialog of our own (emailed code; `useConfirmedAction` hook) used by Devices and Delete account; (2) `DELETE /api/me` also demands `has({ reverification: 'strict' })` on the server; (3) the owner-only menu links (Upload, Members) were not repeated in the avatar menu because the header already has them; (4) the plan's "check delete / multi-session in the Clerk dashboard" turned out unnecessary: everything worked on the dev instance as it is. The re-verification dialog only handles the email-code factor; a Google-only account sees "sign out, sign in again, retry". Not built: phone layout checks, MFA.
+
+## Animated empty state — `clip-static-tv` (2026-11-16, APPROVED)
+
+**What:** the "no videos yet" banner on the feed plays the Higgsfield clip `clip-static-tv.mp4` (a whole old TV in a room, 864x496, about 0.76 MB, silent) instead of the still `empty-no-videos.webp`. It is the banner the clip was made for: the picture already shows one TV in a room.
+- `EmptyState` gets an optional `clip` (a path in `public/art/`). With a clip, a small client component `EmptyClip` renders a `muted playsInline autoPlay` video over the still. The still is the `poster` and the first thing painted, so there is no empty flash while the file loads and nothing changes if the video fails.
+- `prefers-reduced-motion`: no video is mounted; the still stays (same pattern as `ClipScreen`).
+- Same crop as now (`object-cover`, same `objectPosition`), so the banner height and the text under it do not move.
+- The clip does not loop seamlessly. **Default: play once and hold the last frame** (no visible jump). If the last frame looks wrong next to the still, fall back to `loop` and accept the jump, as on the wall.
+- The file is copied from `E:\Work\no-name-art\` into `public/art/`. Nothing from Higgsfield is called at runtime.
+- Search "Nothing found" keeps its still (the clip does not fit that message).
+- About 40 lines of code (`empty-state.tsx` edit + `empty-clip.tsx`); the mp4 is listed in the PR description.
+
+**Check:** lint, typecheck, tests, build (separate `distDir`, see the handoff), a look at the empty feed at desktop and phone width, reduced motion shows the still, and one request for the clip in the network tab. The feed only shows this banner when there are no videos, so I need the empty state to appear (a temporary filter that matches nothing, nothing committed).
+
+**Owner (2026-11-16): OK.** Play once and hold the last frame (the default above).
+
+## Database client recovers from dropped connections (2026-11-16, APPROVED: owner "ok")
+
+**Problem:** at about 20:20 the dev server (up since 19:34) stopped finishing every page that reads the database: the page shell arrived in 0.1 s, then nothing, for 60 s. The Supabase project was healthy (no locks, all sessions idle, a direct query and a fresh pooler connection answered in about 1 s), the process was idle, and a restart fixed it. Most likely cause (**not proven**, the old server's log is gone): `src/db/index.ts` keeps one `postgres` client for the life of the process, and the pooler dropped connections that the client still thought were open. The library defaults make that easy: `idle_timeout` is off (idle connections are never closed), `connect_timeout` is 30 s, and a query has no time limit. Production would have the same weakness (one long-lived client per server instance).
+
+**Fix (3 options, one file):** in `getDb()` pass `postgres(databaseUrl, { prepare: false, idle_timeout: 20, connect_timeout: 10, max_lifetime: 1800 })`.
+- `idle_timeout: 20`: a connection idle for 20 s is closed, so a connection the pooler dropped in a quiet period is never reused; the next query opens a fresh one (about 1 s, as measured).
+- `connect_timeout: 10`: a stuck connect fails after 10 s (the page's existing try/catch then shows "Could not load videos. Refresh to try again.") instead of waiting 30 s.
+- `max_lifetime: 1800`: the library's own default is 30 to 60 minutes; made explicit so it is visible.
+- A short comment says why. No other file changes.
+
+**Not in this fix:** a per-query time limit. `postgres` has none of its own, and sending `statement_timeout` as a startup option may be refused by the Supabase transaction pooler (port 6543), so I would not guess; if the hang comes back with these options, that is the next step (test it against the pooler first).
+
+**Check:** lint, typecheck, tests, build; open the home page twice 30 s apart (the second call must reconnect and answer, not hang). I cannot reproduce the original dropped-connection state on demand, so this PR **reduces the chance of the hang but is not proven to fix it**; the PR body will say so.
+
+## Settings phone fixes (2026-11-16, APPROVED: owner "fix")
+
+Found by a phone-width (390 px) check of the settings stack tip with a signed-in test user. No page scrolled sideways; two small problems:
+- **The active "Account safety" tab was cut off** ("Account sa…"): the tab row scrolls but does not bring the active tab into view. Fix: the tab is labelled **"Safety"** (the page title and the avatar menu keep "Account safety"; the route is already `/settings/safety`).
+- **Long text was cut with "…"** on the email row and the device row, so a full address could not be read on a phone. Fix: both wrap (`break-all` for the email, `break-words` for the device) instead of `truncate`.
+
+Text and class changes only, in `settings-tabs.tsx`, `email-settings.tsx`, `device-settings.tsx`. One small PR on top of #51 (its base moves to `main` as the stack merges).
+
+**Check:** lint, typecheck, tests, build, then the same phone-width look with a long test email address on the Safety tab.

@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { AuthForm } from '@/components/auth/auth-form';
+import { PageBackdrop } from '@/components/page-backdrop';
 import { safeReturnPath } from '@/lib/safe-return-path';
 
 export const metadata = { title: 'Sign in · Experience Community' };
@@ -18,8 +19,9 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   if (userId && !isFinishingSignUp) redirect(returnTo);
 
   return (
-    <main className="mx-auto flex max-w-sm flex-col px-4 py-16">
-      <div className="glass-panel p-6">
+    <main className="relative isolate flex min-h-[calc(100svh-7rem)] items-center justify-center px-4 py-16">
+      <PageBackdrop />
+      <div className="glass-panel w-full max-w-sm p-6 backdrop-blur-md">
         <AuthForm returnTo={returnTo} resumeSignUp={isFinishingSignUp} />
       </div>
     </main>
