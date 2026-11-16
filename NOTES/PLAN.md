@@ -563,3 +563,18 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 **Done when:** the menu opens every tab; a name/photo change shows in the menu and on comments after a refresh; membership and activity match the database; a second email can be added and made primary; another device can be signed out; deleting a test account removes its likes, ratings, comments and member row and the Clerk user, and the owner's delete button is disabled.
 
 **Not in this plan:** notification settings (no emails are sent yet), theme (the site is dark-only), username, two-step login.
+
+## Animated empty state — `clip-static-tv` (2026-11-16, APPROVED)
+
+**What:** the "no videos yet" banner on the feed plays the Higgsfield clip `clip-static-tv.mp4` (a whole old TV in a room, 864x496, about 0.76 MB, silent) instead of the still `empty-no-videos.webp`. It is the banner the clip was made for: the picture already shows one TV in a room.
+- `EmptyState` gets an optional `clip` (a path in `public/art/`). With a clip, a small client component `EmptyClip` renders a `muted playsInline autoPlay` video over the still. The still is the `poster` and the first thing painted, so there is no empty flash while the file loads and nothing changes if the video fails.
+- `prefers-reduced-motion`: no video is mounted; the still stays (same pattern as `ClipScreen`).
+- Same crop as now (`object-cover`, same `objectPosition`), so the banner height and the text under it do not move.
+- The clip does not loop seamlessly. **Default: play once and hold the last frame** (no visible jump). If the last frame looks wrong next to the still, fall back to `loop` and accept the jump, as on the wall.
+- The file is copied from `E:\Work\no-name-art\` into `public/art/`. Nothing from Higgsfield is called at runtime.
+- Search "Nothing found" keeps its still (the clip does not fit that message).
+- About 40 lines of code (`empty-state.tsx` edit + `empty-clip.tsx`); the mp4 is listed in the PR description.
+
+**Check:** lint, typecheck, tests, build (separate `distDir`, see the handoff), a look at the empty feed at desktop and phone width, reduced motion shows the still, and one request for the clip in the network tab. The feed only shows this banner when there are no videos, so I need the empty state to appear (a temporary filter that matches nothing, nothing committed).
+
+**Owner (2026-11-16): OK.** Play once and hold the last frame (the default above).
