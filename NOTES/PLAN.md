@@ -564,6 +564,8 @@ Owner: "we need more settings on profile button". Chosen in a question round: **
 
 **Not in this plan:** notification settings (no emails are sent yet), theme (the site is dark-only), username, two-step login.
 
+**As built (2026-11-16):** five stacked PRs instead of four: #47 shell + Profile, #48 Membership + Activity, #49 Account safety with Email, #50 Devices + our own "Confirm it's you" dialog, #51 Delete account. Changes from the plan above: (1) Clerk demands a fresh check (`session_reverification_required`) before signing another device out, so there is a re-verification dialog of our own (emailed code; `useConfirmedAction` hook) used by Devices and Delete account; (2) `DELETE /api/me` also demands `has({ reverification: 'strict' })` on the server; (3) the owner-only menu links (Upload, Members) were not repeated in the avatar menu because the header already has them; (4) the plan's "check delete / multi-session in the Clerk dashboard" turned out unnecessary: everything worked on the dev instance as it is. The re-verification dialog only handles the email-code factor; a Google-only account sees "sign out, sign in again, retry". Not built: phone layout checks, MFA.
+
 ## Animated empty state — `clip-static-tv` (2026-11-16, APPROVED)
 
 **What:** the "no videos yet" banner on the feed plays the Higgsfield clip `clip-static-tv.mp4` (a whole old TV in a room, 864x496, about 0.76 MB, silent) instead of the still `empty-no-videos.webp`. It is the banner the clip was made for: the picture already shows one TV in a room.
