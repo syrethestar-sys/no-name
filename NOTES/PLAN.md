@@ -535,3 +535,31 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 - Not in this PR: the `clip-static-tv` animated empty state, topic covers, sign-in backdrop.
 
 **Check:** lint, typecheck, tests, build (with a separate `distDir`, see the handoff), a look at the wall, and the network tab: one request for the clip.
+
+## Profile menu + /settings page (2026-11-16, WAITING FOR OWNER OK)
+
+Owner: "we need more settings on profile button". Chosen in a question round: **all four** — edit profile, my membership, my activity, account safety — on **a `/settings` page**, with the avatar menu linking to it.
+
+**Menu (`AccountMenu`):** Profile · Membership · Activity · (owner only: Upload, Members) · Sign out. Each link opens `/settings/<tab>`.
+
+**`/settings` page:** signed-in only (guests are sent to `/sign-in?redirect_url=/settings`). Left tab list, content on the right; on a phone the tabs sit on top. Same `PageHeading` + glass panels. Tabs are real routes (`/settings/profile`, `/membership`, `/activity`, `/safety`) so links and back button work.
+
+1. **Profile** — change first/last name and photo. Built with Clerk's `useUser()` (`user.update`, `user.setProfileImage`), our own form (no Clerk widget). Photo: jpg/png/webp up to 5 MB, previewed before saving. Friendly errors ("Could not save. Try again.").
+2. **Membership** — read-only status from our DB: member / request pending / not a member (with the "Join" link) / rejected with the date you can apply again. Owner sees "You are the owner" with shortcuts to Upload and Members.
+3. **Activity** — three lists (first 30 each, newest first): videos you liked, your ratings (stars), your comments (text + the video it is on). Each links to the video. Videos you can no longer watch (members-only, you are not a member) show as a locked row without a title link. Server component, plain SQL joins, no new tables.
+4. **Account safety** (Clerk):
+   - **Email:** add a new email with a 6-digit code, make it primary, remove an old one.
+   - **Devices:** list of signed-in sessions (browser, last active) with "Sign out" on each, plus "Sign out everywhere else".
+   - **Delete account:** a confirm dialog where you type `DELETE`. `DELETE /api/me` (signed-in only, zod): **first** removes your rows in our database (`likes`, `ratings`, `comments`, `members`), **then** deletes the Clerk user on the server, then the browser signs out. DB first, so a failed Clerk call can simply be retried and nothing half-deleted is left behind. **The owner account cannot delete itself** (the button explains why), so the site can never lose its admin by a mis-click.
+
+**Needs from the owner (Clerk dashboard):** User & Authentication → turn on **email** as an allowed identifier for adding addresses (it already is, sign-in uses email codes), and check the **delete account** and **multi-session / device** features are allowed. I will verify with a test account first and report if any is off.
+
+**Decision for the owner — what happens to a deleted person's comments?**
+- **A (recommended): delete them all.** Cleanest for privacy. A top-level comment takes its replies with it (the DB already works that way), so other people's replies under it disappear too.
+- **B: keep the text, show "Deleted member".** Nobody's replies vanish, but the person's words stay on the site.
+
+**PRs (each under 300 lines):** (1) `/settings` shell + menu links + Profile; (2) Membership + Activity; (3) Safety: email, devices; (4) Delete account (`/api/me`, with tests for the DB cleanup order and the owner block).
+
+**Done when:** the menu opens every tab; a name/photo change shows in the menu and on comments after a refresh; membership and activity match the database; a second email can be added and made primary; another device can be signed out; deleting a test account removes its likes, ratings, comments and member row and the Clerk user, and the owner's delete button is disabled.
+
+**Not in this plan:** notification settings (no emails are sent yet), theme (the site is dark-only), username, two-step login.
