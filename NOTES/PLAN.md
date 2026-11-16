@@ -471,3 +471,35 @@ Owner: "change newest, most liked, trading, coding all that into one filter butt
 **PRs:** (1) migration, `youtube.ts` + tests, server-gated YouTube player on the video page; (2) `/upload` paste-link mode and delete wording. Each under 300 lines.
 
 **Done when:** the owner pastes an Unlisted link, the video plays on `/videos/[id]` for allowed viewers only, a guest on a members-only video gets no ID in the page source, a transcript appears, and `/search` finds it.
+
+## Visual assets plan — Higgsfield trial (2026-11-16, approved)
+
+**Why:** the owner started a Higgsfield trial (ends **2026-11-19 06:09 UTC**, auto-renewal cancelled, so nothing is charged). The site needs images and a short clip for the front page, topic covers, empty states and the TV wall before there are many real videos.
+
+**Budget (the real limit):** the account shows **10 credits** and no unlimited models. Rough cost from the plan text: about 0.25 credit per image and about 6 per short video (an estimate, not confirmed). So: **about 12–15 stills and 1 test clip, not a full set of clips.** Rules for spending:
+- Every generation call sets `max_credits`. I check the balance before and after each one and stop at 1 credit left.
+- Stills first, at the cheapest quality that looks right (1k, then 2k only for keepers). One clip only after a still is approved.
+- The owner sees each result before the next batch.
+
+**Look (from `globals.css` tokens, not new colors):** near-black blue `#07090a`, one pale mint accent `#c4f5e6`, red REC dot `#ff4d4d` used sparingly, soft film grain, CRT scanlines, camcorder viewfinder framing. No people's faces and no text in the images (generated text is unreliable and would not match Oswald / Inter).
+
+**What gets made:**
+1. **Front page backdrop** (1 still, 21:9 or 16:9): dark room, glow of old TVs.
+2. **Topic covers** (3 stills, 16:9): trading, coding, life. Used as filter-chip or card art if the owner likes them.
+3. **Empty states** (2–3 stills): "no videos yet", "no results", "video unavailable".
+4. **TV-wall filler** (up to 6 stills, 4:3): what the TVs without a video show instead of plain static or bars.
+5. **One test clip** (about 5 s, 720p, 16:9, silent): made from the best TV-wall still. If it is good, the wall reuses it on several screens with different start times.
+6. **Thumbnails for real videos:** not generated. A real frame from the video is more honest (see `VISION.md`: real, unfiltered experience). Generated covers are for site chrome only, never for the owner's experience videos.
+
+**How they get on the site (a later PR, own plan check before code):**
+- Files go in a new `public/art/`: stills as `.webp` under about 200 KB each, the clip as `.mp4` under about 2 MB (`muted loop playsInline`, `prefers-reduced-motion` shows the still instead).
+- `CrtScreen` in `src/components/crt-tv.tsx` gets two filler kinds, `still` and `clip`. Static, bars and glow stay as the fallback.
+- No secret keys involved. Nothing from Higgsfield is called at runtime: the files are generated once, then committed.
+- Whole PR under 300 lines of code; binary assets listed in the PR description.
+
+**Open points (owner):**
+1. **Rights:** I have not read Higgsfield's terms for commercial use of trial-generated media. **Owner answer (2026-11-16): does not mind.** The assets stay easy to replace.
+2. **Label:** **Owner answer (2026-11-16): no label.**
+3. If the stills don't look right after the first batch, stop and re-plan instead of spending the rest of the credits.
+
+**Done when:** the owner has approved a set of stills and a clip (or decided to stop), the balance is logged in the handoff note, and a follow-up PR wires approved files into the front page and the empty states.
