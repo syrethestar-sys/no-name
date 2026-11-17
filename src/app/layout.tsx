@@ -3,8 +3,6 @@ import { Inter, JetBrains_Mono, Oswald } from 'next/font/google';
 import { ClerkProvider } from '@clerk/nextjs';
 import { AuthDialogProvider } from '@/components/auth/auth-dialog-provider';
 import { GlowTracker } from '@/components/glow-tracker';
-import { SiteHeader } from '@/components/site-header';
-import { ViewfinderFrame } from '@/components/viewfinder-frame';
 import './globals.css';
 
 // Cyrillic subsets so Mongolian titles and comments render in the same font.
@@ -28,12 +26,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         {/* Clerk runs underneath; every sign-in screen is our own (see components/auth). */}
         <ClerkProvider signInUrl="/sign-in" signUpUrl="/sign-in">
           <AuthDialogProvider>
-            {/* Everything sits inside the viewfinder frame, so pad past its line. */}
-            <div className="px-2 pb-6 sm:px-5 sm:pb-8">
-              <SiteHeader />
-              {children}
-            </div>
-            <ViewfinderFrame />
+            {/* The header and the viewfinder frame live in the (site) group's layout. */}
+            {children}
             <GlowTracker />
           </AuthDialogProvider>
         </ClerkProvider>
