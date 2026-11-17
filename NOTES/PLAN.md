@@ -614,3 +614,50 @@ Found by a phone-width (390 px) check of the settings stack tip with a signed-in
 Text and class changes only, in `settings-tabs.tsx`, `email-settings.tsx`, `device-settings.tsx`. One small PR on top of #51 (its base moves to `main` as the stack merges).
 
 **Check:** lint, typecheck, tests, build, then the same phone-width look with a long test email address on the Safety tab.
+
+## Phase 9a plan — Facebook Page auto-post (2026-11-18, WAITING FOR OWNER OK)
+
+Owner picked this as the next job (2026-11-18). Goal: when the owner saves a video, the owner's Facebook Page gets a post with the title and a link to the video page.
+
+**Needs a public address.** Facebook cannot show a preview of `localhost`. The code is built and unit-tested now, but a real post needs the site online (see the Deploy plan). Until `SITE_URL` is set the feature stays off and the owner button says so.
+
+**Data (one migration):** `videos.facebook_post_id` text, nullable. Set only after Facebook accepts the post, so "posted" can never be claimed by mistake and a video is never posted twice.
+
+**How it works** (logic in our code, like the transcript job; n8n is not set up, so no n8n route in this phase)
+1. `src/lib/facebook.ts` (server-only): `postVideoToFacebook(videoId)` loads the video, builds the message, and calls the Graph API `POST /{FB_PAGE_ID}/feed` with `message`, `link` and the Page token (`FB_PAGE_TOKEN`) through plain `fetch`. Stores the returned post id. Never throws: it returns `'posted' | 'already' | 'off' | 'failed' | 'missing'`.
+2. Message = title, a blank line, the first ~200 characters of the description (if any). The link is `SITE_URL/videos/<id>`. Facebook builds the preview card from the page's own tags.
+3. `POST /api/videos` takes `postToFacebook: boolean` (zod, default false). When true, `after(() => postVideoToFacebook(id))` runs after the response, so a Facebook outage never fails an upload.
+4. Owner panel on the video page: **"Post to Facebook"** button (retry, or post an older video). Once posted it shows "Posted on Facebook" with a link to the post. Friendly errors ("Could not post. Try again.", "Facebook login expired: make a new token"), never raw errors.
+5. Deleting a video also tries to delete its Facebook post (best effort, logged; the row is already gone). If that fails the owner removes the post on Facebook.
+
+**Link preview (new, needed for the card to look right):** the video page has no Open Graph tags today.
+- `generateMetadata` adds `og:title`, `og:description` (description snippet) and `og:image`.
+- `og:image` points to a new route `GET /api/videos/[id]/share-image` that streams the thumbnail **only for public, ready videos**. Anything else is 404, so a members-only thumbnail never leaks to link scrapers. The Supabase bucket is private, so a signed link would expire; this route is stable.
+- A members-only page gets `og:title` only (the locked card already shows the title), no image, no description.
+
+**Members-only videos (owner decides, see question 1).** My recommendation: the upload checkbox "Post on Facebook" is on by default for **public** videos and off for members-only; the owner can still tick it for a members-only video as a teaser (title + link, no picture, the link leads to the locked page with "Request to join").
+
+**Env:** `SITE_URL` (new, server-side, no trailing slash), `FB_PAGE_ID`, `FB_PAGE_TOKEN` (already in `.env.example`; the comment there says "Phase 8a" and gets fixed to 9a). Only `lib/facebook.ts` and the API routes touch the token.
+
+**Owner setup (I give click-by-click steps when we get there; I never see the values):**
+1. Meta for Developers: create an app (type Business) and add the Pages API. Your own Facebook account must be an admin of the Page.
+2. In the Graph API Explorer, make a user token with `pages_show_list` and `pages_manage_posts`, turn it into a long-lived token, then read the Page's own token from `/me/accounts`. A Page token made this way does not expire.
+3. Put `FB_PAGE_ID`, `FB_PAGE_TOKEN` and `SITE_URL` in `.env.local` (and later in Vercel).
+
+**Risks and limits, checked first before the rest is built**
+- **Not sure yet:** a Meta app in Development mode may publish posts that only people with a role on the app can see. If so, the app must be switched to Live (needs a privacy-policy URL; for posting to your own Page by an admin, app review should not be required, but I have not confirmed this). I check Meta's current docs and one real test post **before** building the rest, and report if this blocks us.
+- The test post goes to your real Page, so I ask first and delete it right after.
+- The Graph API version in the URL changes over time. I check the current one when building, and keep it in one constant.
+- Facebook caches link previews. If the thumbnail or title changes later, the old post keeps the old card (the owner can refresh it in Facebook's Sharing Debugger).
+- Changing a video from public to members-only after posting does not remove the post.
+
+**Tests (no real keys):** message builder (title only, long description cut, no description), Graph error mapping (expired token vs. other), `postToFacebook` zod body, share-image gate (public yes; members, missing and not-ready no).
+
+**PRs (each under 300 lines):** (1) migration + `lib/facebook.ts` + tests + share image route + Open Graph tags; (2) upload checkbox + `after()` post + owner panel button + delete cleanup + `.env.example`.
+
+**Open questions (owner):**
+1. Members-only videos: post a teaser by default, never post them, or my recommendation above (off by default, tick it per upload)?
+2. Which Facebook Page, and is your account an admin of it? (open since the first plan)
+3. Is the deploy allowed now? Without it the code is ready but I can't run a real post.
+
+**Done when:** with the keys and a public site address set, saving a public video with the box ticked puts a post with a title, link and picture on the Page; the button posts an older video and never posts one twice; deleting the video removes the post; a members-only video's thumbnail is not available to anyone who is not allowed to see it.
