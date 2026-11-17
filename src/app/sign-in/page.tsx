@@ -4,7 +4,7 @@ import { AuthForm } from '@/components/auth/auth-form';
 import { PageBackdrop } from '@/components/page-backdrop';
 import { safeReturnPath } from '@/lib/safe-return-path';
 
-export const metadata = { title: 'Sign in · Experience Community' };
+export const metadata = { title: 'Sign in · Backroom' };
 
 type SignInPageProps = {
   searchParams: Promise<{ redirect_url?: string; continue?: string }>;

@@ -4,8 +4,8 @@ import { PortfolioLinks } from '@/components/portfolio-links';
 import { portfolioContent } from '@/lib/portfolio-content';
 
 export const metadata = {
-  title: 'Portfolio · Experience Community',
-  description: 'Who I am and what I share on Experience Community.',
+  title: 'Portfolio · Backroom',
+  description: 'Who I am and what I share on Backroom.',
 };
 
 export default function PortfolioPage() {

@@ -4,7 +4,7 @@ import { UploadTabs } from '@/components/upload-tabs';
 import { isAdmin } from '@/lib/auth';
 import { uploadTarget } from '@/lib/stored-video';
 
-export const metadata = { title: 'Upload · Experience Community' };
+export const metadata = { title: 'Upload · Backroom' };
 
 export default async function UploadPage() {
   if (!(await isAdmin())) notFound();

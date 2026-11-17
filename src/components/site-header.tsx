@@ -43,7 +43,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between gap-3 px-4 sm:grid sm:grid-cols-[1fr_auto_1fr]">
         <div className="flex items-center gap-3">
           <Link href="/" className="font-mono text-sm font-medium tracking-[0.2em] uppercase">
-            Experience<span className="text-primary">.</span>
+            Backroom<span className="text-primary">.</span>
           </Link>
           <MobileNav links={navLinks} />
         </div>

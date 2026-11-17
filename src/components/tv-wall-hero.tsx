@@ -101,11 +101,10 @@ export function TvWallHero({
 
       <div className="relative z-10 flex max-w-2xl flex-col items-center px-6 text-center">
         <p className="font-mono text-xs tracking-wider text-foreground/70">{eyebrow}</p>
-        <h1 className="display-title mt-4 text-6xl sm:text-8xl">
-          Experiences
-          <br />
-          on tape
-        </h1>
+        <h1 className="display-title mt-4 text-6xl sm:text-8xl">Backroom</h1>
+        <p className="mt-3 font-mono text-sm tracking-wider text-primary sm:text-base">
+          Where the real talk happens.
+        </p>
         <span
           aria-hidden
           className="mt-8 font-mono text-3xl leading-none font-light text-foreground/80"

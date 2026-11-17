@@ -5,7 +5,7 @@ import { PageHeading } from '@/components/page-heading';
 import { getViewer } from '@/lib/auth';
 import { reapplyDate } from '@/lib/members';
 
-export const metadata = { title: 'Join · Experience Community' };
+export const metadata = { title: 'Join · Backroom' };
 
 function Notice({ title, children }: { title: string; children?: React.ReactNode }) {
   return (

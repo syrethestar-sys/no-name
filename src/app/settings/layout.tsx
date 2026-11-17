@@ -2,7 +2,7 @@ import { PageHeading } from '@/components/page-heading';
 import { SettingsTabs } from '@/components/settings-tabs';
 import { requireUserId } from '@/lib/require-user';
 
-export const metadata = { title: 'Settings · Experience Community' };
+export const metadata = { title: 'Settings · Backroom' };
 
 export default async function SettingsLayout({ children }: { children: React.ReactNode }) {
   await requireUserId('/settings');
