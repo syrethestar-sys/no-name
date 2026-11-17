@@ -4,7 +4,7 @@ import { EmailSettings } from '@/components/email-settings';
 import { getViewer } from '@/lib/auth';
 import { requireUserId } from '@/lib/require-user';
 
-export const metadata = { title: 'Account safety · Experience Community' };
+export const metadata = { title: 'Account safety · Backroom' };
 
 export default async function SafetySettingsPage() {
   await requireUserId('/settings/safety');

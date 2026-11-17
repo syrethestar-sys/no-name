@@ -3,7 +3,7 @@ import { getMyActivity } from '@/lib/activity';
 import { getViewer } from '@/lib/auth';
 import { requireUserId } from '@/lib/require-user';
 
-export const metadata = { title: 'Activity · Experience Community' };
+export const metadata = { title: 'Activity · Backroom' };
 
 export default async function ActivitySettingsPage() {
   const userId = await requireUserId('/settings/activity');

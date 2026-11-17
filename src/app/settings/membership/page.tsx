@@ -4,7 +4,7 @@ import { formatDate } from '@/lib/format';
 import { reapplyDate } from '@/lib/members';
 import { requireUserId } from '@/lib/require-user';
 
-export const metadata = { title: 'Membership · Experience Community' };
+export const metadata = { title: 'Membership · Backroom' };
 
 const LINK_CLASS = 'text-primary hover:underline';
 

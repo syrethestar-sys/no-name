@@ -17,8 +17,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Experience Community',
-  description: 'Watch, like, rate and talk about experience videos.',
+  title: 'Backroom',
+  description: 'Where the real talk happens.',
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

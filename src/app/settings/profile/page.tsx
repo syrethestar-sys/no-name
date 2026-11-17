@@ -1,7 +1,7 @@
 import { ProfileForm } from '@/components/profile-form';
 import { requireUserId } from '@/lib/require-user';
 
-export const metadata = { title: 'Profile · Experience Community' };
+export const metadata = { title: 'Profile · Backroom' };
 
 export default async function ProfileSettingsPage() {
   await requireUserId('/settings/profile');

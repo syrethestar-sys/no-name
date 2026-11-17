@@ -1,6 +1,6 @@
 import { AuthenticateWithRedirectCallback } from '@clerk/nextjs';
 
-export const metadata = { title: 'Signing in · Experience Community' };
+export const metadata = { title: 'Signing in · Backroom' };
 
 /** Google sends people back here. Clerk finishes the sign-in (it renders nothing visible). */
 export default function SsoCallbackPage() {

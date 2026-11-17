@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { getViewer } from '@/lib/auth';
 import { searchVideos, type SearchOutcome } from '@/lib/search';
 
-export const metadata: Metadata = { title: 'Search · Experience Community' };
+export const metadata: Metadata = { title: 'Search · Backroom' };
 
 type SearchPageProps = { searchParams: Promise<{ q?: string }> };
 

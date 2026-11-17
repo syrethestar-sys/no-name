@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: VideoPageProps): Promise<Meta
   const { id } = await params;
   const viewer = await getViewer();
   const video = await getVideoForPage(id, viewer.isMember).catch(() => null);
-  return { title: video ? `${video.title} · Experience Community` : 'Video not found' };
+  return { title: video ? `${video.title} · Backroom` : 'Video not found' };
 }
 
 export default async function VideoPage({ params, searchParams }: VideoPageProps) {

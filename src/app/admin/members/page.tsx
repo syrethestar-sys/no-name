@@ -6,7 +6,7 @@ import { isAdmin } from '@/lib/auth';
 import { formatDate } from '@/lib/format';
 import { listMembersForReview, type MemberWithProfile } from '@/lib/members';
 
-export const metadata = { title: 'Members · Experience Community' };
+export const metadata = { title: 'Members · Backroom' };
 
 function MemberRow({ member, mode }: { member: MemberWithProfile; mode: 'pending' | 'approved' }) {
   return (
