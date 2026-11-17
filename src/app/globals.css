@@ -81,6 +81,7 @@
 }
 
 .portfolio-theme {
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
   color-scheme: light;
   background-color: var(--pf-ground);
   color: var(--pf-ink);
