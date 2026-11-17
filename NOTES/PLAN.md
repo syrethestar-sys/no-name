@@ -700,7 +700,7 @@ The reference's circuit and map are another site's artwork, so they are not copi
 
 ### PRs (CLAUDE.md says each under 300 lines, so this is a stack of small ones)
 1. `chore: split app layouts` — `(site)` route group with the current chrome, root layout keeps fonts, Clerk and providers. Moves only.
-2. `feat: portfolio theme tokens and motion engine` — scoped tokens, Space Grotesk, ticker, spring, scroll trigger, in-view hook, Lenis, tests.
+2. `feat: portfolio theme tokens and motion engine` — `--pf-` colour tokens and `.portfolio-theme` in `globals.css`, plus the pure motion code with tests: spring solver, shared ticker, scroll-progress maths (**done**). Space Grotesk, Lenis and the React hooks (scroll trigger, in-view) move to the first PR that uses them, so no dependency or font lands unused.
 3. `feat: text reveal and sticky stack` — reveal component, stack wrapper, recede maths, tests.
 4. `feat: portfolio masthead and loading veil` — nav, burger sheet, veil.
 5. `feat: portfolio hero (no scene)` — identity, bracket panels, foot row, entrance timings.
