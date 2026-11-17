@@ -661,3 +661,65 @@ Owner picked this as the next job (2026-11-18). Goal: when the owner saves a vid
 3. Is the deploy allowed now? Without it the code is ready but I can't run a real post.
 
 **Done when:** with the keys and a public site address set, saving a public video with the box ticked puts a post with a title, link and picture on the Page; the button posts an older video and never posts one twice; deleting the video removes the post; a members-only video's thumbnail is not available to anyone who is not allowed to see it.
+
+## Portfolio page — "who I am" (2026-11-18, APPROVED by owner: "ok, don't include my videos, just portfolio that represents who am I")
+
+Owner asked: "add portfolio page". Owner's answers: it is about **the owner only**, **no videos on it**, it gets a **nav link** and the **viewfinder look**. This replaces my first draft (featured videos, stats, owner toggle, `featured_at` column): all of that is dropped.
+
+**What visitors see at `/portfolio`** (public: guests, members and the owner see the same page; no sign-in)
+1. **Hero:** `PageHeading` (mono eyebrow, the owner's name as the `display-title`, a one-line tagline).
+2. **About:** the bio, 2–4 short paragraphs in a `glass-panel`.
+3. **What I do:** a short list of 3–4 items (title + one line each), e.g. trading, coding, sharing experiences (the same three interests the join form uses).
+4. **Links:** up to 3 link buttons (GitHub, trading journal, …), opened in a new tab with `rel="noopener noreferrer"`.
+5. One small link at the bottom: "Watch the videos →" to `/`. It is only a link; no video is shown on the page. Easy to delete if unwanted.
+
+**No database, no migration, no API route, no stats.** The page is a static server component. Nothing on it depends on who is signed in.
+
+**Content:** `src/lib/portfolio-content.ts`, plain typed constants (name, tagline, bio paragraphs, "what I do" items, links). It is public text, no secrets. **The owner has not given the real text yet**, so it ships with clearly marked placeholders ("Your name", "Write your tagline here") that the owner replaces. Editing it in the browser is not part of this plan.
+
+**Files**
+- `src/app/portfolio/page.tsx`: the page, with `metadata` (title "Portfolio · Experience Community" and a description).
+- `src/components/portfolio-links.tsx`: the link buttons.
+- `src/lib/portfolio-content.ts`: the text.
+- `src/components/site-header.tsx`: add `{ href: '/portfolio', label: 'Portfolio' }` after `Videos`. Both the segmented nav and the mobile nav read this one list. The owner then sees 5 links, so I check 390 px width.
+
+**Design:** tokens from `globals.css` only, no hardcoded colours; Inter for text, `display-title` for the name, JetBrains Mono for the eyebrow; one mint accent; the frame already comes from the layout's `ViewfinderFrame`. Not a copy of any other site.
+
+**Tests:** none beyond lint, typecheck and build: there is no logic to test (the page only renders constants). If the content file ever gets validation, add a test then.
+
+**PR (one, well under 300 lines):** `feat/portfolio-page`.
+
+**Check before the PR:** lint, typecheck, tests, build; open `/portfolio` signed out at desktop width and at 390 px (no sideways scroll, nav still fits for the owner); the nav link shows as active on `/portfolio`.
+
+**Not in this plan:** videos on the page, stats, editing in the browser, a share image, member profiles, a non-video project gallery.
+
+**Open questions (owner):**
+1. Please send the real text: name, one-line tagline, bio (2–4 sentences), 3–4 "what I do" lines, up to 3 links. Until then the page shows placeholders.
+2. Keep the small "Watch the videos →" link at the bottom?
+
+**Done when:** a guest opens `/portfolio` and sees the name, tagline, bio, what-I-do list and links; the nav link works on desktop and phone; lint, typecheck and build pass.
+
+## Rename to "Backroom" (2026-11-18, WAITING FOR OWNER OK)
+
+Owner asked: change the name to **"Backroom"**, slogan **"where the real talk happens"**. Text only: no database, no API, no new files.
+
+**What changes**
+1. **Header logo** (`site-header.tsx`): `Experience.` becomes `Backroom.` (same mono, uppercase, mint dot).
+2. **Browser tab titles:** `layout.tsx` title becomes `Backroom`; every `… · Experience Community` becomes `… · Backroom` (13 pages: sign-in, join, sso-callback, search, upload, admin/members, video page, portfolio, 5 settings pages).
+3. **Descriptions:** `layout.tsx` description becomes the slogan, "Where the real talk happens."; the portfolio description says "on Backroom".
+4. **Home hero** (`tv-wall-hero.tsx`): the big title "Experiences on tape" becomes `Backroom`, with the slogan "Where the real talk happens." directly under it. The paragraph under that ("Work, life, trading and code…") stays.
+5. **`README.md`** title becomes `Backroom`.
+
+**Stays as is**
+- The feed heading "Experiences" (`(feed)/page.tsx`): it names the videos, not the site.
+- Repo, folder and bucket names (`no-name`, `no-name-videos`) and the Clerk app name `no-name`: internal. Renaming the Clerk app (it can show in sign-in emails) is a dashboard click for the owner; I can give the steps if wanted.
+- `CLAUDE.md`: it never names the site.
+
+**PR (one, about 20 changed lines):** `feat/rename-backroom`. Check: lint, typecheck, build; look at the home hero at desktop width and 390 px (the title must not wrap badly), and a tab title.
+
+**Open questions (owner):**
+1. Hero as in item 4 (title `Backroom`, slogan under it)? Or keep "Experiences on tape" and show the slogan only in the header and tab titles?
+2. Slogan capital: "Where the real talk happens." (my default) or all lowercase as you wrote it?
+3. Branch: the portfolio work is uncommitted on `feat/portfolio-page` and also contains the old name. I suggest finishing and merging the portfolio PR first, then doing the rename from `main`. OK?
+
+**Done when:** no visible "Experience Community" is left, the header shows Backroom., and the slogan shows on the home hero.
