@@ -662,42 +662,76 @@ Owner picked this as the next job (2026-11-18). Goal: when the owner saves a vid
 
 **Done when:** with the keys and a public site address set, saving a public video with the box ticked puts a post with a title, link and picture on the Page; the button posts an older video and never posts one twice; deleting the video removes the post; a members-only video's thumbnail is not available to anyone who is not allowed to see it.
 
-## Portfolio page — "who I am" (2026-11-18, APPROVED by owner: "ok, don't include my videos, just portfolio that represents who am I")
+## Portfolio page — "who I am", art-directed scroll site (2026-11-18, APPROVED by owner: "ok"; questions 4 and 5 not answered yet, so: placeholder shell and placeholder text)
 
-Owner asked: "add portfolio page". Owner's answers: it is about **the owner only**, **no videos on it**, it gets a **nav link** and the **viewfinder look**. This replaces my first draft (featured videos, stats, owner toggle, `featured_at` column): all of that is dropped.
+History: (1) first asked for a portfolio page; (2) owner said it is about the owner only, no videos; (3) owner then pasted a long spec of another site (a racing driver's one-page site) and said "do like this, only the portfolio page". Owner's choices: **everything including the WebGL portrait**, **light colour scheme** like the reference, **placeholder photos now**.
 
-**What visitors see at `/portfolio`** (public: guests, members and the owner see the same page; no sign-in)
-1. **Hero:** `PageHeading` (mono eyebrow, the owner's name as the `display-title`, a one-line tagline).
-2. **About:** the bio, 2–4 short paragraphs in a `glass-panel`.
-3. **What I do:** a short list of 3–4 items (title + one line each), e.g. trading, coding, sharing experiences (the same three interests the join form uses).
-4. **Links:** up to 3 link buttons (GitHub, trading journal, …), opened in a new tab with `rel="noopener noreferrer"`.
-5. One small link at the bottom: "Watch the videos →" to `/`. It is only a link; no video is shown on the page. Easy to delete if unwanted.
+This replaces the earlier plan for this page. The small page already built on branch `feat/portfolio-page` (uncommitted; `portfolio-content.ts`, `portfolio-links.tsx`, `portfolio/page.tsx`, one nav link) is the starting point and gets replaced piece by piece.
 
-**No database, no migration, no API route, no stats.** The page is a static server component. Nothing on it depends on who is signed in.
+### What is and is not taken from the reference
+- **Taken:** the structure and the feel: a light page, a big name, blocks that pin and recede as the next one covers them, letter-by-letter text, a journey timeline with a progress rail, an animated contour-line backdrop, a chequered seam between blocks, a depth-parallax portrait with a cursor-trail reveal, a sign-off footer. Written fresh as our own code (the project rule: "our own CSS build, not a copy").
+- **Not taken:** the driver's photos, the team and sponsor logos and names, the other site's file storage (nothing is hot-linked; every asset lives in `public/portfolio/`), and its artwork data (the circuit outline, the 8,004-dot map, the helmet model). Our own versions replace them (see "The season block" and "The WebGL scene").
+- **Not a single HTML file:** it is a Next.js page in this project, with our usual rules (TypeScript, no `any`, components under 200 lines, colours only from tokens in `globals.css`).
 
-**Content:** `src/lib/portfolio-content.ts`, plain typed constants (name, tagline, bio paragraphs, "what I do" items, links). It is public text, no secrets. **The owner has not given the real text yet**, so it ships with clearly marked placeholders ("Your name", "Write your tagline here") that the owner replaces. Editing it in the browser is not part of this plan.
+### The page (placeholders where the owner's own text and photos go)
+1. **Hero:** masthead (logo, centred nav, burger sheet on phones), the owner's name at display size, an id line, three meta rows, two bracket panels ("now" and "quick facts") and a foot row of links, over the WebGL portrait scene. A loading veil lifts when the scene is ready.
+2. **"This year so far":** first dark block. Chequered seam from the hero, a dot-halftone map, dashed grid axes, a hub with a ping, and a route line that draws itself clockwise in one 6 s lap, lighting four milestone markers; afterwards the cursor becomes a reticle over the dots.
+3. **"My journey":** seven plates (year, photo, short text) on near-black, a rail with a progress thread and a turning square, three parallax layers per row, years that assemble letter by letter, hover dims the other rows.
+4. **"Lately":** back to light: latest update text, a dark button, the portrait melting into a dark band that carries a five-item "what's next" strip with crawling dashed connectors and a pulsing live item.
+5. **Sign-off footer:** cyan edge with a near-black panel, contour lines in white, the figure riding back into place at the page bottom, nav column, legal row.
 
-**Files**
-- `src/app/portfolio/page.tsx`: the page, with `metadata` (title "Portfolio · Experience Community" and a description).
-- `src/components/portfolio-links.tsx`: the link buttons.
-- `src/lib/portfolio-content.ts`: the text.
-- `src/components/site-header.tsx`: add `{ href: '/portfolio', label: 'Portfolio' }` after `Videos`. Both the segmented nav and the mobile nav read this one list. The owner then sees 5 links, so I check 390 px width.
+### Fixed decisions (from the reference, adapted to this project)
+- **Scoped theme, not site-wide:** new tokens in `globals.css` under a `.portfolio-theme` scope (ground `#f7fafb`, ink `#090a0b`, one cyan accent `#02d2e3`, panel and hairline tones). The feed keeps the dark mint viewfinder tokens untouched.
+- **Fonts:** Oswald (already loaded) for display; **Space Grotesk added** for this page's text, loaded with `next/font` in the portfolio layout only.
+- **Own layout:** the root layout puts every page inside the site header and the fixed viewfinder frame. The portfolio needs neither, so PR 1 moves that chrome into a `(site)` route group (pure file moves) and the portfolio gets its own `(portfolio)` layout and its own masthead. Existing URLs do not change.
+- **No global side effects:** the reference scales the page's root font size with the viewport. That would change the whole site, so here the page sizes itself with container units (`cqw`) inside its own wrapper, and the root font size is left alone. Lenis (smooth scroll) and the shared animation loop start on this page only and stop when the owner leaves it.
+- **Motion engine, ours:** one shared animation loop (ticker), a small spring solver, scroll triggers, in-view gates, a text reveal that keeps a hidden plain-text copy for screen readers, the sticky stack (blocks pin; the covered one scales to 0.9 and darkens), all under `src/lib/motion/` with unit tests for the spring and the trigger maths. `prefers-reduced-motion`: no Lenis, text and blocks appear at once, the scene draws its settled frame once.
+- **New dependencies:** `three` (loaded only on this page, by dynamic import) and `lenis`. Both pinned.
+- **Content in one typed file** (`src/lib/portfolio-content.ts`): name, id, meta rows, panels, journey entries, upcoming items, sign-off, links. It ships with clearly marked placeholders.
 
-**Design:** tokens from `globals.css` only, no hardcoded colours; Inter for text, `display-title` for the name, JetBrains Mono for the eyebrow; one mint accent; the frame already comes from the layout's `ViewfinderFrame`. Not a copy of any other site.
+### The season block — our own artwork
+The reference's circuit and map are another site's artwork, so they are not copied. Ours: a **milestones route**, a smooth closed path with four markers (drawn by me, replaceable), and a **halftone built at runtime** by rasterising a shape into a dot lattice (default: the site wordmark; the owner can supply an SVG shape later). The lap timing, glow, markers, chequer reticle and the 24-px chequered seam are re-implemented.
 
-**Tests:** none beyond lint, typecheck and build: there is no logic to test (the page only renders constants). If the content file ever gets validation, add a test then.
+### The WebGL scene — what needs the owner's files
+- Needs: a **cut-out portrait** of the owner plus maps derived from it (diffuse, depth, alpha, normal; a script generates the depth, alpha and normal maps), and an **object worn over the portrait** that is burned away and then revealed by the cursor trail (the reference uses a helmet model).
+- **Placeholders now:** a generated silhouette portrait set, and a simple procedural shell as the worn object, both under `public/portfolio/scene/`. Real photo and a Draco-compressed `object.glb` drop in later with no code change (the loader reads fixed file names).
+- Scene features: device tiers (desktop / tablet / mobile with cheaper settings), entrance rise, crown-to-chin burn with a glowing front, cursor-trail liquid reveal, wireframe wave, contour backdrop shader, helmet-style tilt on the pointer, no-WebGL fallback image, a visible banner if an asset fails to load.
+- **Cannot be fully judged without the real photo.** Until then the scene is checked for running, frame time and fallbacks, not for looks.
 
-**PR (one, well under 300 lines):** `feat/portfolio-page`.
+### PRs (CLAUDE.md says each under 300 lines, so this is a stack of small ones)
+1. `chore: split app layouts` — `(site)` route group with the current chrome, root layout keeps fonts, Clerk and providers. Moves only.
+2. `feat: portfolio theme tokens and motion engine` — scoped tokens, Space Grotesk, ticker, spring, scroll trigger, in-view hook, Lenis, tests.
+3. `feat: text reveal and sticky stack` — reveal component, stack wrapper, recede maths, tests.
+4. `feat: portfolio masthead and loading veil` — nav, burger sheet, veil.
+5. `feat: portfolio hero (no scene)` — identity, bracket panels, foot row, entrance timings.
+6. `feat: contour backdrop and chequered seam` — marching-squares canvas, dissolve canvas.
+7. `feat: season block` — route trace, halftone, reticle, plate.
+8. `feat: journey timeline` — rail, plates, parallax rows, hover dim.
+9. `feat: lately block` — update text, button, band, calendar strip.
+10. `feat: sign-off footer`.
+11. `feat: scene foundation` — tier module, wrapper, head plane, placeholder assets script.
+12. `feat: scene helmet reveal` — burn, trail mask, wireframe wave, tilt.
+13. `feat: scene backdrop and fallbacks` — backdrop shader, no-WebGL image, load-error banner.
+Each PR leaves the site working. `/portfolio` shows the simple page until PR 5 replaces it. The scene files are split into modules (params, shaders, tier, scene) so each stays under the size rules.
 
-**Check before the PR:** lint, typecheck, tests, build; open `/portfolio` signed out at desktop width and at 390 px (no sideways scroll, nav still fits for the owner); the nav link shows as active on `/portfolio`.
+### Checks per PR
+Lint, typecheck, tests, build (**CI runs it on Node 22; this machine has Node 24 and the build crashes locally in webpack, so I cannot run it here**); a look at `/portfolio` at desktop width and at the narrowest the browser allows; no sideways scroll; reduced-motion check on the motion PRs; for the scene PRs, frame time on this machine and the no-WebGL fallback.
 
-**Not in this plan:** videos on the page, stats, editing in the browser, a share image, member profiles, a non-video project gallery.
+### Risks and limits
+- It is a large build (about 13 PRs). Each step is shippable, and the owner can stop after any PR.
+- The page is light while the rest of the site is dark; the feed and `/portfolio` will look like two different sites. That was the owner's choice; a link back to the feed sits in the masthead.
+- three.js adds weight only to this page. Low-power phones get the cheap tier or a still image.
+- The placeholder scene will not look like the reference until the real photo and object arrive.
+- The pending "Rename to Backroom" plan changes the site name; the portfolio masthead logo reads the name from the content file so it can follow.
 
-**Open questions (owner):**
-1. Please send the real text: name, one-line tagline, bio (2–4 sentences), 3–4 "what I do" lines, up to 3 links. Until then the page shows placeholders.
-2. Keep the small "Watch the videos →" link at the bottom?
+### Open questions (owner)
+1. OK on this plan, including the ~13-PR stack?
+2. OK to move the current layout chrome into a `(site)` route group (PR 1, files only move)?
+3. OK to add Space Grotesk (this page only), `three` and `lenis`?
+4. The worn object: placeholder shell now, and you send a 3D model later (or tell me what object you want, e.g. a camcorder to match the site)?
+5. The real text for the page: name, id line, 3 meta rows, "now" panel, 3 quick facts, up to 7 journey entries (year + 1–2 sentences), 5 "what's next" items, a sign-off line, and your links.
 
-**Done when:** a guest opens `/portfolio` and sees the name, tagline, bio, what-I-do list and links; the nav link works on desktop and phone; lint, typecheck and build pass.
+**Done when:** a visitor opens `/portfolio` and sees the full scroll site in your own words and photos: hero with the portrait scene and loading veil, the season block, the journey, the "lately" block and the footer; it works on phone and desktop, respects reduced motion, falls back without WebGL, leaves the feed and header untouched, and lint, typecheck, tests and build pass in CI.
 
 ## Rename to "Backroom" (2026-11-18, WAITING FOR OWNER OK)
 
