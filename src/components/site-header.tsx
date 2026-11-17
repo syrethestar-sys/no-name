@@ -27,6 +27,7 @@ export async function SiteHeader() {
   const showJoin = viewer !== null && !viewer.isMember && viewer.memberStatus !== 'pending';
   const navLinks: NavLink[] = [
     { href: '/', label: 'Videos' },
+    { href: '/portfolio', label: 'Portfolio' },
     { href: '/search', label: 'Search' },
     ...(isOwner
       ? [
