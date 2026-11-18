@@ -11,7 +11,7 @@ export function Hero() {
   const { name, tagline, idLine, meta, now, quickFacts, links } = portfolioContent;
 
   return (
-    <main className="@container relative mx-auto flex min-h-[calc(100svh-7rem)] max-w-7xl flex-col px-4 py-10 sm:px-8">
+    <main className="@container relative mx-auto flex min-h-[calc(100svh-8.5rem)] max-w-7xl flex-col px-4 py-10 sm:px-8">
       <div className="grid flex-1 content-center gap-12 xl:grid-cols-[1fr_22rem] xl:items-end">
         <div>
           <ReadyRise delayIn={AT.id} offset={0.5} className="font-mono text-xs uppercase">
