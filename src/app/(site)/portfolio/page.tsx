@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { RevealText } from '@/components/motion/reveal-text';
-import { Masthead } from '@/components/portfolio/masthead';
 import { PortfolioLinks } from '@/components/portfolio-links';
 import { portfolioContent } from '@/lib/portfolio-content';
 
@@ -14,10 +13,8 @@ export default function PortfolioPage() {
   const { name, tagline, bio, focus, links } = portfolioContent;
 
   return (
-    <main className="mx-auto max-w-4xl px-6 py-6 sm:px-8">
-      <Masthead />
-
-      <h1 className="mt-20 font-display text-6xl leading-[0.95] font-bold uppercase sm:text-8xl">
+    <main className="mx-auto max-w-4xl px-6 py-10 sm:px-8">
+      <h1 className="font-display text-6xl leading-[0.95] font-bold uppercase sm:text-8xl">
         <RevealText text={name} />
       </h1>
       <p className="mt-4 text-lg">{tagline}</p>
@@ -39,7 +36,7 @@ export default function PortfolioPage() {
         </h2>
         <ul className="mt-3 grid gap-4 sm:grid-cols-2">
           {focus.map((item) => (
-            <li key={item.title} className="border border-pf-hairline p-5">
+            <li key={item.title} className="glass-panel p-5">
               <h3 className="font-display text-2xl font-bold uppercase">{item.title}</h3>
               <p className="mt-2 text-sm">{item.description}</p>
             </li>

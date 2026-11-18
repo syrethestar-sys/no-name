@@ -49,42 +49,29 @@
 }
 
 /*
- * The portfolio page's own light palette (NOTES/PLAN.md, "Portfolio page"). The rest of the site
- * stays dark. The --pf- prefix keeps these from colliding with the site tokens above (the site's
- * --accent is a hover grey, the portfolio's accent is cyan). Set .portfolio-theme on the page's
- * wrapper to switch the ground and the ink.
+ * The portfolio page's tokens (NOTES/PLAN.md, "Portfolio restyle"). The page looks like the rest of
+ * the site, so these point at the site tokens above; the --pf- names stay so the page's pieces read
+ * as one group. Use them through Tailwind (text-pf-ink, border-pf-hairline, text-pf-accent …).
  */
 :root {
-  --pf-ground: #f7fafb;
-  --pf-ink: #090a0b;
-  --pf-ink-muted: rgb(9 10 11 / 0.35);
-  --pf-hairline: #dfe5e9;
-  --pf-contour: #ebeef1;
-  --pf-panel: #0e0f14;
-  --pf-black: #090a0b;
-  --pf-on-dark: #ffffff;
-  --pf-on-dark-muted: #b6c1c8;
-  --pf-on-dark-faint: rgb(255 255 255 / 0.4);
-  --pf-border-on-dark: #2a2d36;
-  --pf-accent: #02d2e3;
-  --pf-accent-muted: rgb(2 210 227 / 0.25);
+  --pf-ground: var(--background);
+  --pf-ink: var(--foreground);
+  --pf-ink-muted: var(--muted-foreground);
+  --pf-hairline: var(--border);
+  --pf-contour: rgb(255 255 255 / 0.06);
+  --pf-panel: var(--card);
+  --pf-black: var(--background);
+  --pf-accent: var(--primary);
+  --pf-accent-muted: rgb(196 245 230 / 0.25);
   --pf-map-dot: #7a7a7a;
   --pf-map-grid: #4d4d4d;
   --pf-map-grid-ghost: #1e1e1e;
   --pf-timeline-outline: #535450;
   --pf-timeline-fill: rgb(255 255 255 / 0.1);
   --pf-timeline-rail: rgb(255 255 255 / 0.2);
-  --pf-paddock-contour: rgb(9 10 11 / 0.08);
   --pf-footer-contour: rgb(255 255 255 / 0.1);
   --pf-ease-entrance: cubic-bezier(0.2, 0, 0, 1);
   --pf-ease-plate: cubic-bezier(0.33, 0, 0, 1);
-}
-
-.portfolio-theme {
-  font-family: var(--font-space-grotesk), system-ui, sans-serif;
-  color-scheme: light;
-  background-color: var(--pf-ground);
-  color: var(--pf-ink);
 }
 
 @theme inline {
@@ -95,10 +82,6 @@
   --color-pf-contour: var(--pf-contour);
   --color-pf-panel: var(--pf-panel);
   --color-pf-black: var(--pf-black);
-  --color-pf-on-dark: var(--pf-on-dark);
-  --color-pf-on-dark-muted: var(--pf-on-dark-muted);
-  --color-pf-on-dark-faint: var(--pf-on-dark-faint);
-  --color-pf-border-on-dark: var(--pf-border-on-dark);
   --color-pf-accent: var(--pf-accent);
   --color-pf-accent-muted: var(--pf-accent-muted);
 }

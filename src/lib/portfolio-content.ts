@@ -8,8 +8,6 @@ export type PortfolioContent = {
   bio: string[];
   focus: PortfolioFocus[];
   links: PortfolioLink[];
-  /** The masthead and the phone menu. */
-  nav: PortfolioLink[];
 };
 
 // Public text. PLACEHOLDERS except the two roles: replace the name, bio, focus lines and links.
@@ -26,10 +24,4 @@ export const portfolioContent: PortfolioContent = {
     { title: 'Software engineering', description: 'Replace with one line about your engineering.' },
   ],
   links: [{ label: 'GitHub', href: 'https://github.com/' }],
-  nav: [
-    { label: 'Videos', href: '/' },
-    { label: 'Portfolio', href: '/portfolio' },
-    { label: 'Search', href: '/search' },
-    { label: 'Join', href: '/join' },
-  ],
 };
