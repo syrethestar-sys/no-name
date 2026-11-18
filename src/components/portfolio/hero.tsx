@@ -1,10 +1,19 @@
 import { BracketPanel } from '@/components/portfolio/bracket-panel';
+import { PortraitCard } from '@/components/portfolio/portrait-card';
 import { ReadyRevealText, ReadyRise } from '@/components/portfolio/ready-motion';
 import { PortfolioLinks } from '@/components/portfolio-links';
 import { portfolioContent } from '@/lib/portfolio-content';
 
 /** When each part starts, in ms after the loading veil lifts. */
-const AT = { id: 100, name: 250, tagline: 650, meta: 800, panels: 950, foot: 1300 } as const;
+const AT = {
+  id: 100,
+  name: 250,
+  tagline: 650,
+  meta: 800,
+  portrait: 900,
+  panels: 950,
+  foot: 1300,
+} as const;
 
 /** The first screen: identity on the left, two bracket panels on the right, links along the foot. */
 export function Hero() {
@@ -12,7 +21,7 @@ export function Hero() {
 
   return (
     <main className="@container relative mx-auto flex min-h-[calc(100svh-8.5rem)] max-w-7xl flex-col px-4 py-10 sm:px-8">
-      <div className="grid flex-1 content-center gap-12 xl:grid-cols-[1fr_22rem] xl:items-end">
+      <div className="grid flex-1 content-center gap-12 xl:grid-cols-[1fr_18rem_22rem] xl:items-end">
         <div>
           <ReadyRise delayIn={AT.id} offset={0.5} className="font-mono text-xs uppercase">
             {idLine}
@@ -38,6 +47,10 @@ export function Hero() {
             ))}
           </dl>
         </div>
+
+        <ReadyRise delayIn={AT.portrait} offset={1}>
+          <PortraitCard name={name} />
+        </ReadyRise>
 
         <div className="space-y-6">
           <ReadyRise delayIn={AT.panels} offset={1}>

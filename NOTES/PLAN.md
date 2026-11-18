@@ -775,3 +775,12 @@ Owner asked: change the name to **"Backroom"**, slogan **"where the real talk ha
 3. Branch: the portfolio work is uncommitted on `feat/portfolio-page` and also contains the old name. I suggest finishing and merging the portfolio PR first, then doing the rename from `main`. OK?
 
 **Done when:** no visible "Experience Community" is left, the header shows Backroom., and the slogan shows on the home hero.
+
+## Portfolio portrait — owner's photos (2026-11-18, APPROVED: owner "like that")
+
+Owner gave two photos (`DSC01842.JPG` straight-on, `26LPBS12-2.jpg` smiling, arms crossed), both with a green wall behind.
+
+- **Straight-on photo → hero.** Resized to 1200 × 1800 WebP in `public/portfolio/portrait.webp`, shown in a framed card with mint corner brackets between the name and the two panels. This is the interim look: the planned WebGL scene (PRs 11–13) replaces the card once a cut-out exists.
+- **Smiling photo → journey block (PR 8).** Not added yet, so no file lands unused.
+- **Background:** the wall stays for now. Owner to cut it out in Photoshop (PNG with transparency, recommended) or OK the Higgsfield remove-background tool (uploads the photo to an outside service, so not used without a yes). Owner answered "like that" without choosing; asked again.
+- Originals stay outside the repo (3.5k × 5.2k px); only the resized copy is committed.
