@@ -17,30 +17,50 @@ export type PortfolioContent = {
   season: { title: string; milestones: Milestone[] };
 };
 
-// Public text. PLACEHOLDERS except the two roles: replace everything marked "replace".
+// Public text. Written from the owner's own words; the links are still a placeholder.
 export const portfolioContent: PortfolioContent = {
   siteName: 'Backroom',
-  name: 'Your name',
+  name: 'Khuslen Syre',
   tagline: 'Graphic designer & software engineer',
-  idLine: 'Id line: replace me',
+  idLine: 'Portfolio — 2026 — Ulaanbaatar',
   meta: [
-    { label: 'Based in', value: 'Your city' },
-    { label: 'Works with', value: 'Your tools' },
-    { label: 'Status', value: 'Your status' },
+    { label: 'Based in', value: 'Ulaanbaatar, Mongolia' },
+    {
+      label: 'Works with',
+      value: 'Photoshop, Illustrator, Premiere Pro, Figma, Next.js, TypeScript',
+    },
+    { label: 'Status', value: 'Building Backroom' },
   ],
-  now: { title: 'Now', lines: ['Replace with what you are working on right now.'] },
+  now: {
+    title: 'Now',
+    lines: [
+      'Building Backroom, a video community with sign-in, ratings and search by meaning.',
+      'Designing and coding this portfolio from scratch.',
+      'Planning the next projects in Figma and Premiere Pro.',
+    ],
+  },
   quickFacts: {
     title: 'Quick facts',
-    lines: ['Fact one: replace me.', 'Fact two: replace me.', 'Fact three: replace me.'],
+    lines: [
+      'Designer and developer in one person: from Figma file to shipped site.',
+      'Moves between still design, video editing and code.',
+      'Based in Ulaanbaatar, working with people anywhere.',
+    ],
   },
   links: [{ label: 'GitHub', href: 'https://github.com/' }],
   season: {
     title: 'This year so far',
     milestones: [
-      { label: 'Milestone one', text: 'Replace me.' },
-      { label: 'Milestone two', text: 'Replace me.' },
-      { label: 'Milestone three', text: 'Replace me.' },
-      { label: 'Milestone four', text: 'Replace me.' },
+      {
+        label: 'Backroom built',
+        text: 'A full video community: sign-in, likes, ratings, comments and search by meaning.',
+      },
+      {
+        label: 'Portfolio in progress',
+        text: 'This page: a scroll site with motion, drawn and coded in-house.',
+      },
+      { label: 'Backroom goes public', text: 'Planned: put the site online and share it.' },
+      { label: 'First client project', text: 'Planned: take on the next piece of work.' },
     ],
   },
 };
