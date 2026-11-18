@@ -2,6 +2,8 @@ export type PortfolioLink = { label: string; href: string };
 export type MetaRow = { label: string; value: string };
 export type PanelContent = { title: string; lines: string[] };
 
+export type Milestone = { label: string; text: string };
+
 export type PortfolioContent = {
   siteName: string;
   name: string;
@@ -12,6 +14,7 @@ export type PortfolioContent = {
   now: PanelContent;
   quickFacts: PanelContent;
   links: PortfolioLink[];
+  season: { title: string; milestones: Milestone[] };
 };
 
 // Public text. PLACEHOLDERS except the two roles: replace everything marked "replace".
@@ -31,4 +34,13 @@ export const portfolioContent: PortfolioContent = {
     lines: ['Fact one: replace me.', 'Fact two: replace me.', 'Fact three: replace me.'],
   },
   links: [{ label: 'GitHub', href: 'https://github.com/' }],
+  season: {
+    title: 'This year so far',
+    milestones: [
+      { label: 'Milestone one', text: 'Replace me.' },
+      { label: 'Milestone two', text: 'Replace me.' },
+      { label: 'Milestone three', text: 'Replace me.' },
+      { label: 'Milestone four', text: 'Replace me.' },
+    ],
+  },
 };
