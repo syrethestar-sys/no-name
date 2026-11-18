@@ -1,3 +1,4 @@
+import { ContourBackdrop } from '@/components/portfolio/contour-backdrop';
 import { Hero } from '@/components/portfolio/hero';
 
 export const metadata = {
@@ -7,5 +8,10 @@ export const metadata = {
 
 // The hero is the first block of the scroll site (NOTES/PLAN.md); the other blocks follow it.
 export default function PortfolioPage() {
-  return <Hero />;
+  return (
+    <div className="relative isolate">
+      <ContourBackdrop className="pointer-events-none absolute inset-0 -z-10 size-full [mask-image:linear-gradient(to_bottom,black_55%,transparent)]" />
+      <Hero />
+    </div>
+  );
 }
