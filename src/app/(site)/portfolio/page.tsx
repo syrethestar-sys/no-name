@@ -1,6 +1,7 @@
 import { ChequeredSeam } from '@/components/portfolio/chequered-seam';
 import { ContourBackdrop } from '@/components/portfolio/contour-backdrop';
 import { Hero } from '@/components/portfolio/hero';
+import { SeasonBlock } from '@/components/portfolio/season-block';
 
 export const metadata = {
   title: 'Portfolio · Backroom',
@@ -14,6 +15,7 @@ export default function PortfolioPage() {
       <ContourBackdrop className="pointer-events-none absolute inset-0 -z-10 size-full [mask-image:linear-gradient(to_bottom,black_55%,transparent)]" />
       <Hero />
       <ChequeredSeam />
+      <SeasonBlock />
     </div>
   );
 }
