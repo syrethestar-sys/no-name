@@ -1,3 +1,4 @@
+import { ChequeredSeam } from '@/components/portfolio/chequered-seam';
 import { ContourBackdrop } from '@/components/portfolio/contour-backdrop';
 import { Hero } from '@/components/portfolio/hero';
 
@@ -12,6 +13,7 @@ export default function PortfolioPage() {
     <div className="relative isolate">
       <ContourBackdrop className="pointer-events-none absolute inset-0 -z-10 size-full [mask-image:linear-gradient(to_bottom,black_55%,transparent)]" />
       <Hero />
+      <ChequeredSeam />
     </div>
   );
 }
