@@ -733,6 +733,24 @@ Lint, typecheck, tests, build (**CI runs it on Node 22; this machine has Node 24
 
 **Done when:** a visitor opens `/portfolio` and sees the full scroll site in your own words and photos: hero with the portrait scene and loading veil, the season block, the journey, the "lately" block and the footer; it works on phone and desktop, respects reduced motion, falls back without WebGL, leaves the feed and header untouched, and lint, typecheck, tests and build pass in CI.
 
+## Portfolio restyle — "looks like part of Backroom" (2026-11-18, APPROVED: owner answered 1 yes (site header and frame), 2 yes (all blocks dark))
+
+Owner, while PR 5 was being built: "change the style, i want to look like part of my website". This **reverses the earlier choice of a light page** (portfolio plan, "Fixed decisions"). Looks only: the page structure, motion code, content file and PR order stay.
+
+**What changes**
+1. **Palette:** `.portfolio-theme` stops being light. The `--pf-*` tokens keep their names (so the masthead, menu and hero need no class changes) but take the site's dark values: ground = `--background` (`#07090a`), ink = `--foreground`, hairlines = `--border`, panels = `--card`, accent = the mint `--primary` (`#c4f5e6`). The cyan `#02d2e3` and the light ground are removed.
+2. **Type:** the site's own: Oswald (display), Inter (text), JetBrains Mono (meta/HUD). Space Grotesk is dropped from the portfolio layout.
+3. **Frame and header:** the portfolio goes back inside the site's `SiteChrome`, so it gets the same header and the viewfinder frame (REC, fps, date, timecode). The site header already links to Portfolio. The portfolio's own masthead and burger sheet only existed because the page had no header, so they are **removed** (`masthead.tsx`, `menu-sheet.tsx`). Lenis smooth scroll and the loading veil stay, in a small portfolio layout nested inside the site one.
+4. **Blocks:** the plan alternated light and dark blocks. All blocks become dark and are told apart by tone (`--card` panels, hairlines, a mint glow) instead of by colour inversion. The chequered seam is mint and white on dark, and the footer's cyan edge becomes mint.
+5. **Loading veil:** dark, in the viewfinder style: a `● REC`-style dot, "Loading" in mono, a thin mint line.
+6. **Hero:** layout and text unchanged. The corner-bracket panels already echo the viewfinder's focus frame.
+
+**PRs:** (a) `refactor: portfolio takes the site look` (tokens, layout nesting, remove masthead / menu sheet / Space Grotesk; mostly deletions), then (b) PR 5, the hero and veil, already written and only recoloured. PRs 6–13 are unchanged apart from the colours in point 4.
+
+**Questions (owner)**
+1. Use the **site's header and viewfinder frame** on the portfolio (recommended), or keep the portfolio's own masthead and change only colours and fonts?
+2. **All blocks dark** (recommended), or let one block (for example the journey) stay a lighter panel for contrast?
+
 ## Rename to "Backroom" (2026-11-18, WAITING FOR OWNER OK)
 
 Owner asked: change the name to **"Backroom"**, slogan **"where the real talk happens"**. Text only: no database, no API, no new files.

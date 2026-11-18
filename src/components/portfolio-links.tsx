@@ -12,7 +12,7 @@ export function PortfolioLinks({ links }: { links: PortfolioLink[] }) {
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block border border-pf-ink px-4 py-2 text-sm uppercase transition-colors duration-150 hover:bg-pf-ink hover:text-pf-ground"
+            className="inline-block rounded-md border border-pf-ink/30 px-4 py-2 text-sm uppercase transition-colors duration-150 hover:border-pf-accent hover:bg-pf-accent hover:text-pf-ground"
           >
             {link.label} ↗
           </a>
