@@ -74,6 +74,15 @@
   --pf-ease-plate: cubic-bezier(0.33, 0, 0, 1);
 }
 
+@keyframes pf-veil-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 @theme inline {
   --color-pf-ground: var(--pf-ground);
   --color-pf-ink: var(--pf-ink);
