@@ -1,27 +1,34 @@
 export type PortfolioLink = { label: string; href: string };
-export type PortfolioFocus = { title: string; description: string };
+export type MetaRow = { label: string; value: string };
+export type PanelContent = { title: string; lines: string[] };
 
 export type PortfolioContent = {
   siteName: string;
   name: string;
   tagline: string;
-  bio: string[];
-  focus: PortfolioFocus[];
+  /** The small line above the name. */
+  idLine: string;
+  meta: MetaRow[];
+  now: PanelContent;
+  quickFacts: PanelContent;
   links: PortfolioLink[];
 };
 
-// Public text. PLACEHOLDERS except the two roles: replace the name, bio, focus lines and links.
+// Public text. PLACEHOLDERS except the two roles: replace everything marked "replace".
 export const portfolioContent: PortfolioContent = {
   siteName: 'Backroom',
   name: 'Your name',
   tagline: 'Graphic designer & software engineer',
-  bio: [
-    'Write 2–4 short sentences about who you are.',
-    'Say what you make and what you share on this site.',
+  idLine: 'Id line: replace me',
+  meta: [
+    { label: 'Based in', value: 'Your city' },
+    { label: 'Works with', value: 'Your tools' },
+    { label: 'Status', value: 'Your status' },
   ],
-  focus: [
-    { title: 'Graphic design', description: 'Replace with one line about your design work.' },
-    { title: 'Software engineering', description: 'Replace with one line about your engineering.' },
-  ],
+  now: { title: 'Now', lines: ['Replace with what you are working on right now.'] },
+  quickFacts: {
+    title: 'Quick facts',
+    lines: ['Fact one: replace me.', 'Fact two: replace me.', 'Fact three: replace me.'],
+  },
   links: [{ label: 'GitHub', href: 'https://github.com/' }],
 };
